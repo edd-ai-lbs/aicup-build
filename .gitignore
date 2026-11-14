@@ -1,8 +1,13 @@
 # Secret API keys - never upload
 .env
 
-# Frames the pipeline saves from videos
-data/frames/
+# Videos, pictures and inventories (personal data, large): never upload.
+# Only the pre-saved demo results in data/demo_cache/ are committed.
+data/*
+!data/demo_cache/
+
+# Python virtual environment
+.venv/
 
 # Files Python and macOS create automatically
 __pycache__/
