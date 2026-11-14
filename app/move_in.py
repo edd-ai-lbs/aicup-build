@@ -398,7 +398,8 @@ else:
     with st.container(key="download"):
         st.download_button(
             "Download PDF report",
-            data=make_pdf(add_frames(st.session_state.edited), tenant_name, property_address),
+            data=make_pdf([dict(i, frame_path=outlined(text_or_blank(i.get("frame_path")), box_of(i)))
+                           for i in add_frames(st.session_state.edited)], tenant_name, property_address),
             file_name="move-in-report.pdf",
             mime="application/pdf",
             type="primary",

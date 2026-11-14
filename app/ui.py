@@ -28,6 +28,7 @@ CSS = """
   background: #34D399; color: #0B2E24; border: none; font-weight: 700; font-size: 1.1rem; padding: .7rem 1.8rem;
   transition: transform .15s ease, box-shadow .15s ease;
 }
+.st-key-hero .stButton button p { color: #0B2E24; font-weight: 700; }  /* beat the hero text colour */
 .st-key-hero .stButton button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(52, 211, 153, .35); color: #0B2E24; }
 
 /* Homepage tiles */
