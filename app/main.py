@@ -187,15 +187,15 @@ else:
     ]
     if with_time:
         st.subheader("Rewatch an issue")
-        col_pick, col_video = st.columns([1, 1])
-        n = col_pick.selectbox(
+        n = st.selectbox(
             "Pick an issue to see it in your video",
             range(len(with_time)),
             format_func=lambda n: f"{with_time[n]['room']} – {text_or_blank(with_time[n].get('item'))} "
                                   f"({video_time(with_time[n]['frame_time_s'])})",
         )
         pick = with_time[n]
-        col_video.video(st.session_state.videos[pick["room"]], start_time=int(pick["frame_time_s"]))
+        # Fixed width so upright phone videos don't fill the whole screen
+        st.video(st.session_state.videos[pick["room"]], start_time=int(pick["frame_time_s"]), width=400)
 
     # Forgot something? Add it with a voice note
     st.subheader("Forgot something?")
