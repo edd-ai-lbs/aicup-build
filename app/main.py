@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.append(str(ROOT))  # so we can import from the report/ and pipeline/ folders
 from pipeline.analyse import analyse_room  # noqa: E402  (Francesca's AI: video -> issues)
 from pipeline.voice_note import add_voice_note  # noqa: E402  (Francesca's AI: voice note -> issues)
+from pipeline.inventory import compare_inventory  # noqa: E402  (Francesca's AI: agency inventory vs videos)
 from report.make_report import make_pdf  # noqa: E402
 
 ROOMS = ["Kitchen", "Living room", "Bedroom 1", "Bedroom 2", "Bathroom", "Hallway"]
@@ -247,6 +248,69 @@ else:
             "For help: [Shelter – housing advice](https://england.shelter.org.uk/housing_advice) · "
             "[Citizens Advice – renting privately](https://www.citizensadvice.org.uk/housing/renting-privately/)"
         )
+
+    # Compare with your agency's inventory (the check-in inventory the letting agency sends)
+    st.subheader("Compare with your agency's inventory")
+    st.write("Got a check-in inventory from your letting agency? "
+             "Upload it and we'll show where it disagrees with your videos.")
+    inventory = st.file_uploader("Agency inventory (PDF)", type=["pdf"])
+    st.caption("Word files need to be saved as PDF first (in Word: File → Save As → PDF).")
+    if inventory and st.button("Compare"):
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            f.write(inventory.getbuffer())
+        try:
+            with st.spinner("Reading your inventory..."):
+                st.session_state.inventory_result = compare_inventory(
+                    f.name, st.session_state.edited, list(st.session_state.videos.keys()))
+        except Exception as e:  # e.g. missing API key, no internet, unreadable PDF
+            st.error(f"Sorry, the comparison didn't work: {e}. Please try again.")
+            st.stop()
+        st.session_state.inventory_version = st.session_state.get("inventory_version", 0) + 1
+
+    result = st.session_state.get("inventory_result")
+    if result:
+        def show_finding(finding, key):
+            """One finding: Room – Item, both sides, small photo and a Rewatch option when we have them."""
+            with st.container(border=True):
+                photo = text_or_blank(finding.get("frame_path"))
+                text_col, photo_col = st.columns([3, 1]) if photo and Path(photo).exists() else (st.container(), None)
+                text_col.markdown(f"**{text_or_blank(finding.get('room'))} – {text_or_blank(finding.get('item'))}**")
+                text_col.markdown(f"Inventory says: _{text_or_blank(finding.get('inventory_says')) or 'nothing'}_  \n"
+                                  f"Your video shows: _{text_or_blank(finding.get('video_shows')) or 'nothing'}_")
+                if photo_col:
+                    photo_col.image(photo, width=160)
+                # Rewatch: find the video via the matching issue's photo (room names can differ slightly)
+                seconds = finding.get("frame_time_s")
+                room = next((i["room"] for i in st.session_state.edited
+                             if photo and text_or_blank(i.get("frame_path")) == photo), finding.get("room"))
+                if seconds is not None and pd.notna(seconds) and room in st.session_state.videos:
+                    if text_col.toggle(f"Rewatch at {video_time(seconds)}", key=f"inv_rewatch_{key}"):
+                        st.video(st.session_state.videos[room], start_time=int(seconds), width=400)
+
+        groups = [
+            ("missing_from_inventory", "🔴 Not in the inventory: raise these with your agency"),
+            ("inventory_only", "🟠 In the inventory but not in your videos: check these"),
+            ("not_filmed", "⚪ Rooms you haven't filmed"),
+            ("agrees", "🟢 Agrees"),
+        ]
+        for status, title in groups:
+            found = [f for f in result["findings"] if f["status"] == status]
+            if not found:
+                continue
+            if status == "agrees":  # least important, so folded away
+                with st.expander(f"{title} ({len(found)})"):
+                    for n, finding in enumerate(found):
+                        show_finding(finding, f"{status}_{n}")
+            else:
+                st.markdown(f"#### {title} ({len(found)})")
+                for n, finding in enumerate(found):
+                    show_finding(finding, f"{status}_{n}")
+
+        reply = st.text_area("Your reply to the agency", value=result["reply"], height=250,
+                             key=f"inventory_reply_{st.session_state.get('inventory_version', 0)}")
+        st.download_button("Save reply as a text file", data=reply, file_name="reply-to-agency.txt",
+                           mime="text/plain")
+        st.caption("Agencies usually ask for comments within a few days. Send this soon, and keep a copy.")
 
     # 4. Download the report
     st.header("4. Download your report")
