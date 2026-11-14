@@ -12,6 +12,7 @@ Delete a JSON file to make that video go through the AI again (e.g. after changi
 import hashlib
 import json
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from pipeline.frames import extract_frames
@@ -33,8 +34,12 @@ def _fingerprint(video_path):
 def analyse_room(video_path, room):
     # Name the pictures after the room so each room's photos are kept apart.
     name = room.lower().replace(" ", "_") or "frame"
-    frames = extract_frames(video_path, name=name)  # always: quick, and the report needs the pictures
-    cache = CACHE_DIR / f"{_fingerprint(video_path)}.json"
+    with ThreadPoolExecutor(2) as pool:
+        # Pictures are picked in the background while we check the cache and transcribe the voice.
+        frames_job = pool.submit(extract_frames, video_path, name=name)  # always: the report needs the pictures
+        cache = CACHE_DIR / f"{_fingerprint(video_path)}.json"
+        sentences = None if cache.exists() else transcribe(video_path)
+        frames = frames_job.result()
 
     if cache.exists():
         print(f"Using saved AI results for this video: {cache.name}")
@@ -44,7 +49,7 @@ def analyse_room(video_path, room):
             issue["frame_path"] = nearest["frame_path"]
         return issues
 
-    issues = find_issues(frames, transcribe(video_path))
+    issues = find_issues(frames, sentences)
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     cache.write_text(json.dumps(issues, indent=2))
     return issues
