@@ -1,0 +1,3 @@
+[server]
+# Phone videos are often over Streamlit's default 200 MB limit. Value is in MB.
+maxUploadSize = 1024
