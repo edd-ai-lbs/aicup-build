@@ -3,13 +3,13 @@
 maxUploadSize = 1024
 
 [client]
-# We add our own menu links with nicer names (see the top of app/main.py and app/pages/checklist.py).
+# Pages are set in app/main.py (tabs across the top), so hide Streamlit's own page list.
 showSidebarNavigation = false
 
 [theme]
-# Calm, professional look: navy accents to match the PDF report.
+# Edd.AI: deep green, emerald and mint on crisp white (fonts and cards are in app/ui.py).
 base = "light"
-primaryColor = "#1F3A60"
+primaryColor = "#047857"
 backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F2F5F9"
-textColor = "#1A1A1A"
+secondaryBackgroundColor = "#F4F7F6"
+textColor = "#111827"

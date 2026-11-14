@@ -9,10 +9,6 @@ import streamlit as st
 sys.path.append(str(Path(__file__).resolve().parents[2]))  # project folder, so we can import content/
 from content.checklist import CHECKLIST, checklist_for  # noqa: E402
 
-st.set_page_config(page_title="Admin checklist", page_icon="✅")
-st.sidebar.page_link("main.py", label="Move-in report", icon="🏠")
-st.sidebar.page_link("pages/move_out.py", label="Move-out check", icon="📦")
-st.sidebar.page_link("pages/checklist.py", label="Admin checklist", icon="✅")
 
 st.title("Move-in admin checklist")
 st.write("Your personal to-do list for the first weeks in a UK rental.")

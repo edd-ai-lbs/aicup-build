@@ -13,10 +13,6 @@ from pipeline.moveout import compare_room_videos  # noqa: E402
 DEFAULT_ROOMS = ["Kitchen", "Living room", "Bedroom 1", "Bedroom 2", "Bathroom", "Hallway"]  # same as the move-in page
 VIDEO_TYPES = ["mp4", "mov", "m4v"]
 
-st.set_page_config(page_title="Move-out check", page_icon="📦")
-st.sidebar.page_link("main.py", label="Move-in report", icon="🏠")
-st.sidebar.page_link("pages/move_out.py", label="Move-out check", icon="📦")
-st.sidebar.page_link("pages/checklist.py", label="Admin checklist", icon="✅")
 
 
 def video_time(seconds):
