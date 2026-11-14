@@ -9,6 +9,7 @@ import streamlit as st
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))  # project folder, so we can import pipeline/
 from pipeline.moveout import compare_room_videos  # noqa: E402
+from report.moveout_report import make_moveout_pdf  # noqa: E402
 
 DEFAULT_ROOMS = ["Kitchen", "Living room", "Bedroom 1", "Bedroom 2", "Bathroom", "Hallway"]  # same as the move-in page
 VIDEO_TYPES = ["mp4", "mov", "m4v"]
@@ -91,6 +92,15 @@ if result:
                     f"**Who sorts it?** {f['responsibility']} – {f['responsibility_reason']} "
                     f"[{f['responsibility_source']}]({f['responsibility_url']})"
                 )
+
+# PDF of every room compared so far
+all_results = st.session_state.get("moveout", {})
+if all_results:
+    st.divider()
+    st.subheader("Your move-out report")
+    st.caption(f"Before/after photos for every finding. Rooms compared: {', '.join(all_results)}.")
+    st.download_button("Download move-out report (PDF)", data=make_moveout_pdf(all_results),
+                       file_name="move-out-report.pdf", mime="application/pdf", type="primary")
 
 st.divider()
 st.caption("General guidance, not legal advice. For help with deposits: "
