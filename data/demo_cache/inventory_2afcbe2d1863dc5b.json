@@ -1,0 +1,69 @@
+{
+  "findings": [
+    {
+      "status": "agrees",
+      "room": "Kitchen",
+      "item": "Wall cupboards \u2013 wood-effect edging on door bottom",
+      "inventory_says": "Fair. Edging strip lifting in places.",
+      "video_shows": "Wood-effect trim strip along the bottom of the wall cabinet door is worn, with the finish peeling and scuffed along its length",
+      "issue_number": 0
+    },
+    {
+      "status": "agrees",
+      "room": "Kitchen",
+      "item": "Wall cupboards \u2013 edging on corner of another door",
+      "inventory_says": "Fair. Edging strip lifting in places.",
+      "video_shows": "Worn and chipped finish on the corner of another cabinet door's bottom trim",
+      "issue_number": 1
+    },
+    {
+      "status": "missing_from_inventory",
+      "room": "Kitchen",
+      "item": "Wall cupboards \u2013 trim/pelmet under cabinets",
+      "inventory_says": "Fair. Edging strip lifting in places.",
+      "video_shows": "Section of trim under the wall cabinets appears broken or missing, leaving a gap",
+      "issue_number": 2
+    },
+    {
+      "status": "missing_from_inventory",
+      "room": "Kitchen",
+      "item": "Cable under wall cabinet",
+      "inventory_says": "",
+      "video_shows": "Loose cable draped exposed along the underside of the wall cabinet trim, not clipped or concealed",
+      "issue_number": 3
+    },
+    {
+      "status": "missing_from_inventory",
+      "room": "Kitchen",
+      "item": "Worktop to wall tile sealant by sink",
+      "inventory_says": "Good. Light general wear only.",
+      "video_shows": "Dark gap where sealant is missing or failed between worktop and wall tiles",
+      "issue_number": 4
+    },
+    {
+      "status": "missing_from_inventory",
+      "room": "Kitchen",
+      "item": "Washing machine door seal",
+      "inventory_says": "Good. Working, drum and seal clean.",
+      "video_shows": "Black mould or dirt build-up on the rubber door seal",
+      "issue_number": 5
+    },
+    {
+      "status": "missing_from_inventory",
+      "room": "Kitchen",
+      "item": "Washing machine front panel",
+      "inventory_says": "Good. Working, drum and seal clean.",
+      "video_shows": "Torn sticker and adhesive residue on the front of the washing machine",
+      "issue_number": 6
+    },
+    {
+      "status": "inventory_only",
+      "room": "Kitchen",
+      "item": "Floor",
+      "inventory_says": "Fair. Light marks in places, no cracked tiles.",
+      "video_shows": "",
+      "issue_number": -1
+    }
+  ],
+  "reply": "Dear Example Lettings Ltd,\n\nThank you for sending the check-in inventory for Flat 1, 12 Test Road, London NW1 4SA, dated 14/11/2026. I have checked it against a video I took of the kitchen and noticed the following points that are not recorded, or are recorded differently. Please could you add them to the inventory:\n\n1. Wall cupboards: a section of the trim/pelmet under the wall cabinets is broken or missing, leaving a gap. The inventory only mentions the edging strip lifting.\n2. A loose cable is draped exposed along the underside of the wall cabinet trim and is not clipped or concealed. This is not mentioned in the inventory.\n3. Worktop by the sink: the sealant between the worktop and the wall tiles is missing or has failed, leaving a dark gap. The inventory describes the worktop as \"Good. Light general wear only.\"\n4. Washing machine door seal: there is black mould or dirt build-up on the rubber seal. The inventory states \"drum and seal clean.\"\n5. Washing machine front: there is a torn sticker and adhesive residue on the front panel, which is not mentioned.\n\nI have video footage of these points and can send it if helpful. Please could you confirm that the inventory has been updated.\n\nKind regards,\n[Your name]"
+}
