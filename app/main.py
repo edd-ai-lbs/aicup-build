@@ -19,7 +19,7 @@ from report.make_report import make_pdf  # noqa: E402
 
 ROOMS = ["Kitchen", "Living room", "Bedroom 1", "Bedroom 2", "Bathroom", "Hallway"]
 SEVERITY = ["Minor", "Moderate", "Major"]
-COLUMNS = ["room", "item", "issue", "severity", "frame_time_s", "responsibility", "note", "confirmed"]
+COLUMNS = ["room", "item", "issue", "severity", "frame_time_s", "responsibility", "note", "ai_check", "confirmed"]
 RESPONSIBILITY = ["Landlord to repair", "Tenant to sort", "Not tenant's – cosmetic", "Unsure – ask landlord"]
 FRAMES_DIR = Path(tempfile.gettempdir()) / "movein_frames"
 
@@ -28,6 +28,28 @@ def cap(text):
     """Capital first letter, rest unchanged ('tv stand' -> 'Tv stand', 'TV stand' stays)."""
     text = str(text).strip()
     return text[:1].upper() + text[1:]
+
+
+def text_or_blank(value):
+    """'' for missing values (the table turns empty cells into NaN)."""
+    return "" if value is None or (isinstance(value, float) and pd.isna(value)) else str(value)
+
+
+def ai_check(issue):
+    """What the 'AI check' column shows: how sure the AI was about this issue."""
+    confidence = text_or_blank(issue.get("confidence"))
+    if confidence == "high":
+        return "🟢 Sure"
+    if confidence == "medium":
+        reason = text_or_blank(issue.get("uncertainty_reason"))
+        return f"🟠 Check: {reason}" if reason else "🟠 Check"
+    return "Added by you"  # voice-note and hand-added rows have no AI confidence
+
+
+def video_time(seconds):
+    """32.0 -> '0:32'."""
+    s = int(seconds)
+    return f"{s // 60}:{s % 60:02d}"
 
 
 def guess_responsibility(issue):
@@ -119,7 +141,7 @@ if video and room:
         if room not in st.session_state.rooms:  # added here, not on typing, so the dropdown doesn't jump back
             st.session_state.rooms.append(room)
         for issue in new_issues:
-            issue["responsibility"] = guess_responsibility(issue)
+            issue.setdefault("responsibility", guess_responsibility(issue))  # keep the AI's sourced answer
             issue["room"] = room
             for field in ["item", "issue", "severity"]:
                 issue[field] = cap(issue.get(field, ""))
@@ -136,7 +158,7 @@ if not st.session_state.issues:
 else:
     st.caption("Click a cell to edit it. Untick 'Confirmed' to leave an issue out. Add or delete rows at the bottom.")
     edited = st.data_editor(
-        pd.DataFrame(st.session_state.issues),
+        pd.DataFrame([dict(i, ai_check=ai_check(i)) for i in st.session_state.issues]),
         key=f"editor_{st.session_state.version}",
         num_rows="dynamic",
         hide_index=True,
@@ -149,10 +171,31 @@ else:
             "frame_time_s": st.column_config.NumberColumn("Time in video (s)", format="%.0f"),
             "responsibility": st.column_config.SelectboxColumn("Who sorts it?", options=RESPONSIBILITY),
             "note": "Your note",
+            "ai_check": st.column_config.TextColumn(
+                "AI check", disabled=True, default="Added by you", width="medium",
+                help="🟢 the AI is sure. 🟠 have a quick look yourself – it says what to check.",
+            ),
             "confirmed": st.column_config.CheckboxColumn("Confirmed", default=True),
         },
     )
     st.session_state.edited = edited.to_dict("records")
+
+    # Rewatch: play a room's video from the moment an issue was seen
+    with_time = [
+        i for i in st.session_state.edited
+        if i.get("room") in st.session_state.videos and pd.notna(i.get("frame_time_s"))
+    ]
+    if with_time:
+        st.subheader("Rewatch an issue")
+        col_pick, col_video = st.columns([1, 1])
+        n = col_pick.selectbox(
+            "Pick an issue to see it in your video",
+            range(len(with_time)),
+            format_func=lambda n: f"{with_time[n]['room']} – {text_or_blank(with_time[n].get('item'))} "
+                                  f"({video_time(with_time[n]['frame_time_s'])})",
+        )
+        pick = with_time[n]
+        col_video.video(st.session_state.videos[pick["room"]], start_time=int(pick["frame_time_s"]))
 
     # Forgot something? Add it with a voice note
     st.subheader("Forgot something?")
@@ -170,7 +213,7 @@ else:
             st.error(f"Sorry, the voice note didn't work: {e}. Please try again.")
             st.stop()
         for issue in updated[len(current):]:  # only the new rows
-            issue["responsibility"] = guess_responsibility(issue)
+            issue.setdefault("responsibility", guess_responsibility(issue))  # voice notes have no AI answer yet
             for field in ["item", "issue", "severity"]:
                 issue[field] = cap(issue.get(field, ""))
         st.session_state.issues = updated
@@ -180,15 +223,29 @@ else:
     if st.session_state.get("last_note"):
         st.success(f"Added from your note: \"{st.session_state.last_note}\"")
 
-    with st.expander("Who sorts what? (for your information – not included in the report)"):
-        st.markdown(
-            "- **Landlord to repair:** heating, hot water, plumbing, electrics, damp and the structure of the home.\n"
-            "- **Tenant to sort:** small everyday items like lightbulbs, a shower curtain or batteries.\n"
-            "- **Not tenant's – cosmetic:** scratches, marks, wear. The landlord may not fix them, "
-            "but because they're in your move-in report you shouldn't be charged for them later.\n\n"
-            "The 'Who sorts it?' column is a first guess – change it if it's wrong. General guidance, not legal advice: "
-            "see [GOV.UK – private renting repairs](https://www.gov.uk/private-renting/repairs) and "
-            "[Shelter – repairs](https://england.shelter.org.uk/housing_advice/repairs)."
+    # Why? Sources – who sorts each issue, and where that rule comes from (not included in the report)
+    with st.expander("Why? Sources – who sorts each issue (for your information, not in the report)"):
+        lines, sources = [], {}
+        for i in st.session_state.edited:
+            if i.get("confirmed") != True:  # noqa: E712 (also works for the table's numpy True)
+                continue
+            who = text_or_blank(i.get("responsibility")) or "Not set"
+            reason = text_or_blank(i.get("responsibility_reason"))
+            source, url = text_or_blank(i.get("responsibility_source")), text_or_blank(i.get("responsibility_url"))
+            line = f"- **{text_or_blank(i.get('item')) or 'Item'}** → {who}"
+            if reason and source and url:
+                line += f": {reason} [{source}]({url})"
+                sources[source] = url
+            else:
+                line += " _(the app's own guess – check with your landlord)_"
+            lines.append(line)
+        st.markdown("\n".join(lines) or "No confirmed issues yet.")
+        if sources:
+            st.markdown("**Sources used:**\n" + "\n".join(f"- [{s}]({u})" for s, u in sources.items()))
+        st.caption(
+            "You can change 'Who sorts it?' in the table if it's wrong. General guidance, not legal advice. "
+            "For help: [Shelter – housing advice](https://england.shelter.org.uk/housing_advice) · "
+            "[Citizens Advice – renting privately](https://www.citizensadvice.org.uk/housing/renting-privately/)"
         )
 
     # 4. Download the report
