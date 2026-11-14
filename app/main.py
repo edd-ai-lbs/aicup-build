@@ -26,8 +26,7 @@ page = st.navigation(pages, position="top")
 # On phones the tabs above fold into a small "»" menu, so show a row of tab buttons too (hidden on computers, see ui.py).
 with st.container(key="mobile_nav"):
     for col, p, label in zip(st.columns(4), pages, ["Home", "Move-in", "Move-out", "Checklist"]):
-        if p.url_path == page.url_path:
-            col.markdown(f'<div class="edd-tab-current">{label}</div>', unsafe_allow_html=True)
-        else:
-            col.page_link(p, label=label)
+        # Every tab is the same kind of link (keeps your session); the key marks the current one for the CSS.
+        with col.container(key=f"tab_{p.url_path or 'home'}_{'on' if p.url_path == page.url_path else 'off'}"):
+            st.page_link(p, label=label)
 page.run()

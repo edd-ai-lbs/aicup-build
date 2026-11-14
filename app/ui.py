@@ -93,22 +93,33 @@ CSS = """
 @keyframes edd-pop { 0% { transform: scale(.96); } 45% { transform: scale(1.05); } 100% { transform: scale(1); } }
 @keyframes edd-pulse { 0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, .6); } 100% { box-shadow: 0 0 0 16px rgba(52, 211, 153, 0); } }
 
+/* Smoothness: don't fade the page out on every tap while Streamlit re-runs (looks like flickering on mobile data) */
+[data-testid="stElementContainer"][data-stale="true"] { opacity: 1 !important; transition: none !important; }
+
+/* Touchscreens: a tap counts as "hover" and sticks, which made cards jump. No lift effects there. */
+@media (hover: none) {
+  [class*="st-key-card_"]:hover, [class*="st-key-fresh_"]:hover, [class*="st-key-tool_"]:hover,
+  .st-key-hero .stButton button:hover { transform: none !important; box-shadow: none !important; }
+}
+
 /* Phones: tab buttons, smaller headings, thumb-sized buttons, compact cards */
 .st-key-mobile_nav { display: none; }
 @media (max-width: 640px) {
-  .st-key-mobile_nav {
-    display: block; position: sticky; top: 3.4rem; z-index: 99; background: #FFFFFF;
-    margin: -8px -16px 4px; padding: 6px 8px; border-bottom: 1px solid #E5E9E8;
+  [data-testid="stMainBlockContainer"] { padding-top: 3.6rem !important; }  /* less empty space under the logo */
+  .st-key-mobile_nav { display: block; margin: 0 -8px 8px; padding-bottom: 6px; border-bottom: 1px solid #E5E9E8; }
+  /* Four identical tabs, styled like the laptop tabs: plain text, current one on a soft grey background */
+  .st-key-mobile_nav [data-testid="stHorizontalBlock"] {
+    display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px !important;
   }
-  .st-key-mobile_nav [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 4px !important; }
-  .st-key-mobile_nav [data-testid="stColumn"] { min-width: 0 !important; width: auto !important; flex: 1 1 0 !important; }
+  .st-key-mobile_nav [data-testid="stColumn"] { width: 100% !important; min-width: 0 !important; }
+  .st-key-mobile_nav [class*="st-key-tab_"], .st-key-mobile_nav [data-testid="stElementContainer"],
+  .st-key-mobile_nav [data-testid="stPageLink"], .st-key-mobile_nav [data-testid="stPageLink"] a { width: 100% !important; }
   .st-key-mobile_nav [data-testid="stPageLink"] a {
-    justify-content: center; padding: 6px 4px; background: #F4F7F6; font-size: .85rem; font-weight: 600;
+    justify-content: center; height: 38px; padding: 0 2px; margin: 0; border-radius: 8px; background: transparent;
   }
-  .st-key-mobile_nav .edd-tab-current {
-    text-align: center; padding: 6px 4px; border-radius: 999px; background: #0B2E24; color: #FFFFFF;
-    font-size: .85rem; font-weight: 600; line-height: 1.6;
-  }
+  .st-key-mobile_nav [data-testid="stPageLink"] a p { font-size: .9rem; font-weight: 500; color: #111827; white-space: nowrap; }
+  .st-key-mobile_nav [class*="_on"] [data-testid="stPageLink"] a { background: #E8EDEB; }
+  .st-key-mobile_nav [class*="_on"] [data-testid="stPageLink"] a p { font-weight: 700; }
 
   .stApp h1 { font-size: 2rem !important; line-height: 1.15; }
   .stApp h2 { font-size: 1.55rem !important; line-height: 1.2; }
@@ -119,6 +130,7 @@ CSS = """
   .edd-steps li { padding: 10px 12px; }
 
   .stButton button, .stDownloadButton button { width: 100%; min-height: 48px; }
+  .stApp *, .stApp *::before, .stApp *::after { animation: none !important; transition: none !important; }  /* lighter on phones */
   [class*="st-key-card_"], [class*="st-key-fresh_"] { padding: 14px; }
   [class*="st-key-card_"] img, [class*="st-key-fresh_"] img { max-height: 170px; }
 }
