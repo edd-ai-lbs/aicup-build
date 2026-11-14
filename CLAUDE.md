@@ -40,7 +40,7 @@ Every module passes issues in this shape. Don't change it without telling the te
 
 The report adds `property_address`, `tenant_name` and `created_at` (ISO timestamp).
 
-Added Sat 14 Nov (pipeline fills them): `confidence` ("high" | "medium"), `uncertainty_reason` (what to double-check, "" when high), `responsibility` (same options as the app's "Who sorts it?" column), `responsibility_reason`, `responsibility_source`, `responsibility_url` (from `content/responsibility.json`).
+Added Sat 14 Nov (pipeline fills them): `confidence` ("high" | "medium"), `uncertainty_reason` (what to double-check, "" when high), `responsibility` (same options as the app's "Who sorts it?" column), `responsibility_reason`, `responsibility_source`, `responsibility_url` (from `content/responsibility.json`), `box` ([x0, y0, x1, y1] as 0–1 fractions of the photo, around the problem; null if none).
 
 ## Tech stack
 
