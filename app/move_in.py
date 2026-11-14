@@ -18,7 +18,9 @@ from pipeline.voice_note import add_voice_note  # noqa: E402  (Francesca's AI: v
 from pipeline.landlord_email import write_email  # noqa: E402
 from pipeline.inventory import compare_inventory  # noqa: E402  (Francesca's AI: agency inventory vs videos)
 from report.make_report import make_pdf  # noqa: E402
-from ui import badges, box_of, outlined, step_bar  # noqa: E402  (app/ui.py: Edd.AI theme helpers)
+from ui import badges, box_of, is_phone, outlined, step_bar  # noqa: E402  (app/ui.py: Edd.AI theme helpers)
+
+PHONE = is_phone()  # phones get folded "Edit details" and a smaller video player
 
 ROOMS = ["Kitchen", "Living room", "Bedroom 1", "Bedroom 2", "Bathroom", "Hallway"]
 SEVERITY = ["Minor", "Moderate", "Major"]
@@ -135,6 +137,8 @@ room = st.selectbox(
 )
 room = cap(room or "")
 video = st.file_uploader("Upload the video", type=["mp4", "mov", "m4v"], key=f"upload_{st.session_state.version}")
+st.caption("📱 Tip: film in 1080p (iPhone: Settings → Camera → Record Video), about 1 minute per room. "
+           "Smaller videos upload much faster on mobile data.")
 if video and room:
     st.video(video, width=360)
     if st.button(f"Find issues in: {room}", type="primary"):
@@ -234,21 +238,26 @@ else:
                                  (f"AI: Check – {reason}" if reason else "AI: Check", "check") if confidence == "medium"
                                  else ("Added by you", "you"))
                         badges((severity, severity.lower() if severity in SEVERITY else "minor"), check)
-                    sev_col, who_col = body.columns(2)
+                    who = text_or_blank(issue.get("responsibility"))
+                    if PHONE:  # one short line instead of the full form, so the list stays scrollable
+                        body.caption(f"Who sorts it: {who or 'Unsure'}" + (f" · Note: {text_or_blank(issue.get('note'))}"
+                                                                           if text_or_blank(issue.get("note")) else ""))
+                    details = body.expander("Edit details", expanded=not PHONE)  # folded on phones, open on computers
+                    sev_col, who_col = details.columns(2)
                     issue["severity"] = sev_col.selectbox(
                         "Severity", SEVERITY, key=f"sev_{k}",
                         index=SEVERITY.index(severity) if severity in SEVERITY else 0)
-                    who = text_or_blank(issue.get("responsibility"))
                     issue["responsibility"] = who_col.selectbox(
                         "Who sorts it?", RESPONSIBILITY, key=f"who_{k}",
                         index=RESPONSIBILITY.index(who) if who in RESPONSIBILITY else len(RESPONSIBILITY) - 1)
-                    issue["note"] = body.text_input("Your note", value=text_or_blank(issue.get("note")),
-                                                    key=f"note_{k}", placeholder="Add a note (optional)")
+                    issue["note"] = details.text_input("Your note", value=text_or_blank(issue.get("note")),
+                                                       key=f"note_{k}", placeholder="Add a note (optional)")
                     seconds = issue.get("frame_time_s")
                     if room_name in st.session_state.videos and seconds is not None and pd.notna(seconds):
                         if body.toggle(f"▶ Rewatch at {video_time(seconds)}", key=f"rw_{k}"):
                             # Fixed width so upright phone videos don't fill the whole screen
-                            body.video(st.session_state.videos[room_name], start_time=int(seconds), width=400)
+                            body.video(st.session_state.videos[room_name], start_time=int(seconds),
+                                       width=300 if PHONE else 400)
         st.session_state.edited = issues
 
     # Forgot something? Add it with a voice note

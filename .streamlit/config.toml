@@ -5,6 +5,8 @@ maxUploadSize = 1024
 [client]
 # Pages are set in app/main.py (tabs across the top), so hide Streamlit's own page list.
 showSidebarNavigation = false
+# Hide Streamlit's developer buttons ("Deploy", ⋮ menu) so the top bar stays clean, especially on phones.
+toolbarMode = "minimal"
 
 [theme]
 # Edd.AI: deep green, emerald and mint on crisp white (fonts and cards are in app/ui.py).
