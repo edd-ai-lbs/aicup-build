@@ -1,12 +1,15 @@
-"""Video -> still pictures. Looks at the video every second and keeps the useful moments:
+"""Video -> still pictures. Looks at the video about every second and keeps the useful moments:
 sharp (not blurred by camera movement), not too dark, and not a repeat of the previous view.
 At most 30 pictures per clip, spread across the whole video."""
 
 import os
+import shutil
 import sys
 
 import cv2
 import numpy as np
+
+from pipeline.media import keyframes
 
 MAX_SIDE = 1280      # long side in pixels: enough detail for damage, about 1/3 cheaper than 1568
 DARK = 25            # average brightness (0-255) below this = too dark to see anything
@@ -34,25 +37,43 @@ def _read_moments(video, times):
         if scale < 1:
             image = cv2.resize(image, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
         brightness, sharpness, thumb = _measure(image)
-        found.append({"t": round(t, 1), "jpg": cv2.imencode(".jpg", image)[1], "bright": brightness,
+        found.append({"t": round(t, 1), "jpg": cv2.imencode(".jpg", image)[1].tobytes(), "bright": brightness,
                       "sharp": sharpness, "thumb": thumb})
+    return found
+
+
+def _read_keyframes(video_path):
+    """Fast way: ffmpeg reads only the video's keyframes (about one per second), already shrunk."""
+    found_frames = keyframes(video_path, MAX_SIDE)
+    if not found_frames:
+        return None
+    found = []
+    for t, path in found_frames:
+        with open(path, "rb") as f:
+            jpg = f.read()
+        image = cv2.imdecode(np.frombuffer(jpg, np.uint8), cv2.IMREAD_COLOR)
+        if image is not None:
+            brightness, sharpness, thumb = _measure(image)
+            found.append({"t": t, "jpg": jpg, "bright": brightness, "sharp": sharpness, "thumb": thumb})
+    shutil.rmtree(os.path.dirname(found_frames[0][1]), ignore_errors=True)
     return found
 
 
 def extract_frames(video_path, name="frame", out_dir="data/frames", every_s=1.5, max_frames=30, spare=10):
     """Save the useful frames as JPGs and return [{"frame_time_s": 12.0, "frame_path": "..."}, ...]."""
-    video = cv2.VideoCapture(video_path)
-    if not video.isOpened():
-        raise ValueError(f"Could not open video: {video_path}")
-    fps = video.get(cv2.CAP_PROP_FPS) or 30
-    duration_s = video.get(cv2.CAP_PROP_FRAME_COUNT) / fps
-
-    # 1. Look at a few more moments than we keep (spares replace blurry or repeated ones).
-    #    Each moment is kept as a small JPG in memory.
-    step_s = max(every_s, duration_s / (max_frames + spare))
-    times = [i * step_s for i in range(int(duration_s / step_s) + 1) if i * step_s < duration_s]
-    candidates = _read_moments(video, times)
-    video.release()
+    # 1. Collect candidate moments, each kept as a small JPG in memory. Fast way first (keyframes);
+    #    if ffmpeg isn't available or the video has too few keyframes, look every few seconds instead.
+    candidates = _read_keyframes(video_path)
+    if not candidates or len(candidates) < 10:
+        video = cv2.VideoCapture(video_path)
+        if not video.isOpened():
+            raise ValueError(f"Could not open video: {video_path}")
+        fps = video.get(cv2.CAP_PROP_FPS) or 30
+        duration_s = video.get(cv2.CAP_PROP_FRAME_COUNT) / fps
+        step_s = max(every_s, duration_s / (max_frames + spare))  # a few spares replace blurry ones
+        times = [i * step_s for i in range(int(duration_s / step_s) + 1) if i * step_s < duration_s]
+        candidates = _read_moments(video, times)
+        video.release()
     if not candidates:
         return []
 
@@ -76,7 +97,7 @@ def extract_frames(video_path, name="frame", out_dir="data/frames", every_s=1.5,
     for c in kept:
         path = os.path.join(out_dir, f"{name}_{int(c['t']):03d}.jpg")
         with open(path, "wb") as f:
-            f.write(c["jpg"].tobytes())
+            f.write(c["jpg"])
         frames.append({"frame_time_s": c["t"], "frame_path": path})
     return frames
 
