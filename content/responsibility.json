@@ -8,56 +8,102 @@
       "who": "Landlord to repair",
       "covers": "Structure and exterior: walls, roof, windows, doors, stairs, including fire safety",
       "explanation": "Landlords are always responsible for the structure and exterior of the home, including walls, windows and doors.",
-      "source": {"label": "GOV.UK – Private renting: repairs", "url": "https://www.gov.uk/private-renting/repairs"}
+      "source": {
+        "label": "GOV.UK – Private renting: repairs",
+        "url": "https://www.gov.uk/private-renting/repairs"
+      }
     },
     {
       "id": "landlord_sanitary",
       "who": "Landlord to repair",
       "covers": "Sanitary fittings and plumbing: basins, sinks, baths, toilets, showers, their pipes and drains",
       "explanation": "Landlords are always responsible for basins, sinks, baths and toilets, and their pipes and drains.",
-      "source": {"label": "GOV.UK – Private renting: repairs", "url": "https://www.gov.uk/private-renting/repairs"}
+      "source": {
+        "label": "GOV.UK – Private renting: repairs",
+        "url": "https://www.gov.uk/private-renting/repairs"
+      }
     },
     {
       "id": "landlord_heating_electrics",
       "who": "Landlord to repair",
       "covers": "Heating and hot water, boilers, radiators and towel rails, gas appliances, pipes, flues, ventilation, electrical wiring and sockets",
       "explanation": "Landlords are always responsible for heating and hot water, gas appliances, ventilation and electrical wiring.",
-      "source": {"label": "GOV.UK – Private renting: repairs", "url": "https://www.gov.uk/private-renting/repairs"}
+      "source": {
+        "label": "GOV.UK – Private renting: repairs",
+        "url": "https://www.gov.uk/private-renting/repairs"
+      }
     },
     {
       "id": "landlord_damp_mould",
       "who": "Landlord to repair",
       "covers": "Damp and mould not caused by the tenant",
       "explanation": "Tenants should not be charged for damp and mould that is the landlord's responsibility. Report mould to your landlord straight away.",
-      "source": {"label": "Shelter – Deposit deductions for damage and missing items", "url": "https://england.shelter.org.uk/housing_advice/tenancy_deposits/what_can_your_landlord_deduct_from_your_deposit/damage_and_missing_items"}
+      "source": {
+        "label": "Shelter – Deposit deductions for damage and missing items",
+        "url": "https://england.shelter.org.uk/housing_advice/tenancy_deposits/what_can_your_landlord_deduct_from_your_deposit/damage_and_missing_items"
+      }
     },
     {
       "id": "tenant_small_jobs",
       "who": "Tenant to sort",
       "covers": "Small everyday jobs: light bulbs, smoke alarm batteries",
       "explanation": "Tenants are expected to do small jobs like changing light bulbs or smoke alarm batteries.",
-      "source": {"label": "Shelter – Landlord and tenant responsibilities for repairs", "url": "https://england.shelter.org.uk/housing_advice/repairs/landlord_and_tenant_responsibilities_for_repairs"}
+      "source": {
+        "label": "Shelter – Landlord and tenant responsibilities for repairs",
+        "url": "https://england.shelter.org.uk/housing_advice/repairs/landlord_and_tenant_responsibilities_for_repairs"
+      }
     },
     {
       "id": "existing_damage",
       "who": "Not tenant's – cosmetic",
       "covers": "Existing marks, scuffs, stains, chips, scratches, holes, wear or dirt already there at move-in (cosmetic, not a repair)",
       "explanation": "This was already there when you moved in. Tenants can be charged for damage they cause, such as holes or stains, so recording it now protects your deposit.",
-      "source": {"label": "Shelter – Deposit deductions for damage and missing items", "url": "https://england.shelter.org.uk/housing_advice/tenancy_deposits/what_can_your_landlord_deduct_from_your_deposit/damage_and_missing_items"}
+      "source": {
+        "label": "Shelter – Deposit deductions for damage and missing items",
+        "url": "https://england.shelter.org.uk/housing_advice/tenancy_deposits/what_can_your_landlord_deduct_from_your_deposit/damage_and_missing_items"
+      }
     },
     {
       "id": "wear_and_tear",
       "who": "Not tenant's – cosmetic",
       "covers": "Fair wear and tear: small scuffs, faded paint or furniture, worn flooring or carpets",
       "explanation": "Fair wear and tear from normal everyday living can't be deducted from your deposit.",
-      "source": {"label": "Shelter – What can a landlord keep from your deposit?", "url": "https://england.shelter.org.uk/housing_advice/tenancy_deposits/what_can_your_landlord_deduct_from_your_deposit"}
+      "source": {
+        "label": "Shelter – What can a landlord keep from your deposit?",
+        "url": "https://england.shelter.org.uk/housing_advice/tenancy_deposits/what_can_your_landlord_deduct_from_your_deposit"
+      }
     },
     {
       "id": "unclear",
       "who": "Unsure – ask landlord",
       "covers": "Anything that fits none of the above, or depends on the tenancy agreement (e.g. landlord's furniture and appliances, common areas)",
       "explanation": "This depends on your tenancy agreement. Ask your landlord in writing and keep the reply.",
-      "source": {"label": "GOV.UK – Private renting: repairs", "url": "https://www.gov.uk/private-renting/repairs"}
+      "source": {
+        "label": "GOV.UK – Private renting: repairs",
+        "url": "https://www.gov.uk/private-renting/repairs"
+      }
+    }
+  ],
+  "move_out_rules": [
+    {
+      "id": "tenant_damage",
+      "who": "Tenant to sort",
+      "covers": "New damage since move-in caused by the tenant, family or guests: holes, stains, burns, breakages",
+      "explanation": "Tenants can be charged for damage they cause, including accidental damage. Repairing it yourself first, or agreeing a fair cost, is usually cheaper than a deduction.",
+      "source": {
+        "label": "Shelter – Deposit deductions for damage and missing items",
+        "url": "https://england.shelter.org.uk/housing_advice/tenancy_deposits/what_can_your_landlord_deduct_from_your_deposit/damage_and_missing_items"
+      }
+    },
+    {
+      "id": "tenant_cleaning",
+      "who": "Tenant to sort",
+      "covers": "Dirt, mess or items left behind that weren't there at move-in",
+      "explanation": "You only need to clean to the same standard as when you moved in. Landlords can't make you pay for professional cleaning unless it was professionally cleaned before you moved in.",
+      "source": {
+        "label": "Shelter – Can landlords charge for cleaning and gardening?",
+        "url": "https://england.shelter.org.uk/housing_advice/tenancy_deposits/what_can_your_landlord_deduct_from_your_deposit/cleaning_gardening_decorating"
+      }
     }
   ]
 }

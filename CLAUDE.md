@@ -68,7 +68,7 @@ PITCH.md    pitch and research (not for coding)
 3. **Admin checklist (around lunch).**
 4. **Report a repair (early afternoon):** describe/photo a problem → who is responsible → draft landlord email → logged.
 5. **Contract red-flag check (only if time).**
-6. **Move-out deposit comparison:** pitch slide / mock-up only.
+6. **Move-out deposit comparison:** now being built (see decisions log): move-in vs move-out video per room.
 
 A feature only counts once it works in the demo flow. Otherwise it goes on the roadmap slide.
 
@@ -103,6 +103,7 @@ Also:
 ## Decisions log
 
 - Fri 13 Nov – Track A, Move-in Co-pilot, Python + Streamlit, roles as above – team.
+- Sat 14 Nov – Build the move-out comparison for real (was slide only): `pipeline/moveout.py` + a Move-out tab – team.
 
 ## Current status
 
