@@ -13,12 +13,25 @@ PROMPT = """You are helping a tenant in the UK record the condition of a rented 
 as evidence for getting their deposit back. The pictures above are frames from one walk-through
 video, each labelled with the second it was taken.
 
-List every piece of visible damage, wear or dirt a landlord could later blame on the tenant:
-scratches, scuffs, marks, stains, chips, cracks, holes, mould, broken or missing items.
+List the visible damage, wear or dirt a landlord could later blame on the tenant:
+scratches, scuffs, marks, stains, chips, cracks, holes, mould, rust, broken or missing items.
 - Name the room each issue is in (e.g. kitchen, living room, bathroom, bedroom, hallway).
 - Report each physical issue once, even if it appears in several frames; use the frame where it is clearest.
-- Only report what you can actually see. Do not guess about things out of view.
-- Ignore the tenant's own belongings and mess; focus on the property and its fittings."""
+- Ignore the tenant's own belongings and mess; focus on the property and its fittings.
+
+Be accurate: a false alarm in a legal record is as unhelpful as a missed problem.
+- Only report damage you can clearly see. Phone video often has blur, glare, shadows, reflections,
+  low light and compression noise; none of these are damage.
+- Normal features are not damage: grout lines and tile joints, sealant that is simply present,
+  screws and fixings that are meant to be there, ordinary signs of a lived-in but clean home.
+- Loose parts resting on a surface (a plug, a pop-up waste, a spare fitting) are not damage; they can
+  usually be put back. Only report them if something is visibly broken or clearly missing from its place.
+- "frame_time_s" must be the label of a frame where this exact problem is clearly visible, because
+  that picture is printed next to it in the report. Never point at a frame that shows something else.
+- For each issue, rate your confidence: "high" if it would be obvious to anyone looking at the
+  picture, "medium" if it is visible but small, "low" if it might be lighting, blur or a normal feature.
+- If several frames show the same spot and it only looks wrong in one, it is probably not damage.
+- "note" is only for the tenant's own spoken words (see below if any). Do not write your own description there."""
 
 VOICE_PROMPT = """
 
@@ -47,8 +60,9 @@ SCHEMA = {
                     "severity": {"type": "string", "enum": ["minor", "moderate", "major"]},
                     "frame_time_s": {"type": "number"},
                     "note": {"type": "string"},
+                    "confidence": {"type": "string", "enum": ["high", "medium", "low"]},
                 },
-                "required": ["room", "item", "issue", "severity", "frame_time_s", "note"],
+                "required": ["room", "item", "issue", "severity", "frame_time_s", "note", "confidence"],
                 "additionalProperties": False,
             },
         }
@@ -76,7 +90,7 @@ def find_issues(frames, sentences=None):
     response = anthropic.Anthropic().beta.messages.create(
         model="claude-opus-5-5",
         max_tokens=16000,
-        output_config={"effort": "medium", "format": {"type": "json_schema", "schema": SCHEMA}},
+        output_config={"effort": "high", "format": {"type": "json_schema", "schema": SCHEMA}},
         betas=["server-side-fallback-2026-07-01"],
         fallbacks="default",  # if Claude declines, the API retries on another model
         messages=[{"role": "user", "content": content}],
@@ -85,10 +99,13 @@ def find_issues(frames, sentences=None):
         raise RuntimeError("Claude declined to analyse these pictures.")
 
     text = next(b.text for b in response.content if b.type == "text")
-    issues = json.loads(text)["issues"]
+    # Drop the ones Claude itself isn't sure about (likely lighting, blur or normal features).
+    issues = [i for i in json.loads(text)["issues"] if i.pop("confidence") != "low"]
 
     # Fill in the rest of the shared format.
     for issue in issues:
+        if not sentences:
+            issue["note"] = ""  # nothing was said, so there is no tenant comment
         nearest = min(frames, key=lambda f: abs(f["frame_time_s"] - issue["frame_time_s"]))
         issue["frame_time_s"] = nearest["frame_time_s"]
         issue["frame_path"] = nearest["frame_path"]
