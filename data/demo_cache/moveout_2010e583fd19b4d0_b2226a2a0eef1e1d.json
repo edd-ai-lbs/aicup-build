@@ -3,16 +3,28 @@
     {
       "status": "cleaning_needed",
       "item": "Worktops, sink area and floor",
-      "description": "Worktops and the sink area are covered with personal items: microwave, water jug, spice rack, dish rack, chopping board with knife, cleaning bottles and a jar with liquid. A bin also stands on the floor. These were not there at move-in and need clearing and wiping down before handover.",
+      "description": "The worktops, hob, sink drainer and shelves are covered with the tenant's items: dish rack, crockery, chopping board and knife, food cartons, a water jug, spice rack and cloths. A bin also stands on the floor. These were not there at move-in and need clearing, with the surfaces wiped down.",
       "severity": "minor",
       "confidence": "medium",
-      "uncertainty_reason": "The move-out video may have been filmed before packing. Check that everything is removed and surfaces are wiped on the final day.",
+      "uncertainty_reason": "This may simply be belongings that will be packed before handover; check the worktops are cleared and clean on the final day.",
       "fix_before_leaving": true,
       "room": "Kitchen",
       "before_time_s": 7.6,
       "before_path": "data/frames/kitchen_in_007.jpg",
       "after_time_s": 3.0,
       "after_path": "data/frames/kitchen_out_003.jpg",
+      "before_box": [
+        0.22569444444444445,
+        0.6640625,
+        1.0,
+        0.87890625
+      ],
+      "after_box": [
+        0.0,
+        0.3515625,
+        1.0,
+        0.8333333333333334
+      ],
       "responsibility": "Tenant to sort",
       "responsibility_reason": "You only need to clean to the same standard as when you moved in. Landlords can't make you pay for professional cleaning unless it was professionally cleaned before you moved in.",
       "responsibility_source": "Shelter \u2013 Can landlords charge for cleaning and gardening?",
@@ -21,7 +33,7 @@
     {
       "status": "already_recorded",
       "item": "Wall cabinet door bottom trim",
-      "description": "Wood-effect trim along the bottom of the wall cabinet door is still worn and peeling, as recorded at move-in. No obvious worsening.",
+      "description": "Wood-effect trim along the bottom of the wall cabinet door was already worn, scuffed and peeling at move-in. It looks the same at move-out.",
       "severity": "minor",
       "confidence": "high",
       "uncertainty_reason": "",
@@ -31,42 +43,18 @@
       "before_path": "data/frames/kitchen_in_041.jpg",
       "after_time_s": 6.0,
       "after_path": "data/frames/kitchen_out_006.jpg",
-      "responsibility": "Not tenant's \u2013 cosmetic",
-      "responsibility_reason": "This was already there when you moved in. Tenants can be charged for damage they cause, such as holes or stains, so recording it now protects your deposit.",
-      "responsibility_source": "Shelter \u2013 Deposit deductions for damage and missing items",
-      "responsibility_url": "https://england.shelter.org.uk/housing_advice/tenancy_deposits/what_can_your_landlord_deduct_from_your_deposit/damage_and_missing_items"
-    },
-    {
-      "status": "already_recorded",
-      "item": "Wall cabinet door bottom trim (corner)",
-      "description": "Worn, chipped corner finish on another cabinet door's bottom trim was recorded at move-in. The trim edge looks similar at move-out.",
-      "severity": "minor",
-      "confidence": "medium",
-      "uncertainty_reason": "The move-out view of the corner is distant, so check it close up to confirm it has not worsened.",
-      "fix_before_leaving": false,
-      "room": "Kitchen",
-      "before_time_s": 51.2,
-      "before_path": "data/frames/kitchen_in_051.jpg",
-      "after_time_s": 6.0,
-      "after_path": "data/frames/kitchen_out_006.jpg",
-      "responsibility": "Not tenant's \u2013 cosmetic",
-      "responsibility_reason": "This was already there when you moved in. Tenants can be charged for damage they cause, such as holes or stains, so recording it now protects your deposit.",
-      "responsibility_source": "Shelter \u2013 Deposit deductions for damage and missing items",
-      "responsibility_url": "https://england.shelter.org.uk/housing_advice/tenancy_deposits/what_can_your_landlord_deduct_from_your_deposit/damage_and_missing_items"
-    },
-    {
-      "status": "already_recorded",
-      "item": "Wall cabinet underside trim / pelmet",
-      "description": "The broken or missing section of trim under the wall cabinets was noted at move-in. The cabinet underside looks the same at move-out.",
-      "severity": "minor",
-      "confidence": "medium",
-      "uncertainty_reason": "The exact gap is not shown close up in the move-out video.",
-      "fix_before_leaving": false,
-      "room": "Kitchen",
-      "before_time_s": 37.9,
-      "before_path": "data/frames/kitchen_in_037.jpg",
-      "after_time_s": 4.5,
-      "after_path": "data/frames/kitchen_out_004.jpg",
+      "before_box": [
+        0.0,
+        0.595703125,
+        1.0,
+        0.6982421875
+      ],
+      "after_box": [
+        0.078125,
+        0.41015625,
+        0.4513888888888889,
+        0.5078125
+      ],
       "responsibility": "Not tenant's \u2013 cosmetic",
       "responsibility_reason": "This was already there when you moved in. Tenants can be charged for damage they cause, such as holes or stains, so recording it now protects your deposit.",
       "responsibility_source": "Shelter \u2013 Deposit deductions for damage and missing items",
@@ -75,21 +63,88 @@
     {
       "status": "already_recorded",
       "item": "Worktop to wall tile joint by sink",
-      "description": "Failed or missing sealant between the worktop and tiles by the sink was recorded at move-in. The sink area looks broadly the same at move-out.",
+      "description": "A dark gap where the sealant is missing between the worktop and the wall tiles was recorded at move-in. No clear change is visible at move-out.",
       "severity": "minor",
       "confidence": "medium",
-      "uncertainty_reason": "Items around the sink partly hide the joint in the move-out video.",
+      "uncertainty_reason": "The joint is partly hidden by bottles and a towel in the move-out video, so check it once the worktop is cleared.",
       "fix_before_leaving": false,
       "room": "Kitchen",
       "before_time_s": 7.6,
       "before_path": "data/frames/kitchen_in_007.jpg",
       "after_time_s": 7.5,
       "after_path": "data/frames/kitchen_out_007.jpg",
+      "before_box": [
+        0.3298611111111111,
+        0.6640625,
+        0.5902777777777778,
+        0.7421875
+      ],
+      "after_box": [
+        0.1996527777777778,
+        0.5208333333333334,
+        0.4079861111111111,
+        0.60546875
+      ],
       "responsibility": "Landlord to repair",
       "responsibility_reason": "Landlords are always responsible for basins, sinks, baths and toilets, and their pipes and drains.",
       "responsibility_source": "GOV.UK \u2013 Private renting: repairs",
       "responsibility_url": "https://www.gov.uk/private-renting/repairs"
+    },
+    {
+      "status": "already_recorded",
+      "item": "Washing machine door seal",
+      "description": "Black mould or dirt on the rubber door seal was already present at move-in. The seal is not filmed close up at move-out.",
+      "severity": "minor",
+      "confidence": "medium",
+      "uncertainty_reason": "The seal is not clearly visible in the move-out frames; film it close up to show it has not got worse.",
+      "fix_before_leaving": false,
+      "room": "Kitchen",
+      "before_time_s": 22.8,
+      "before_path": "data/frames/kitchen_in_022.jpg",
+      "after_time_s": 3.0,
+      "after_path": "data/frames/kitchen_out_003.jpg",
+      "before_box": [
+        0.5208333333333334,
+        0.390625,
+        0.9461805555555556,
+        0.5859375
+      ],
+      "after_box": [
+        0.7152777777777778,
+        0.46875,
+        0.8159722222222222,
+        0.7552083333333334
+      ],
+      "responsibility": "Not tenant's \u2013 cosmetic",
+      "responsibility_reason": "This was already there when you moved in. Tenants can be charged for damage they cause, such as holes or stains, so recording it now protects your deposit.",
+      "responsibility_source": "Shelter \u2013 Deposit deductions for damage and missing items",
+      "responsibility_url": "https://england.shelter.org.uk/housing_advice/tenancy_deposits/what_can_your_landlord_deduct_from_your_deposit/damage_and_missing_items"
+    },
+    {
+      "status": "already_recorded",
+      "item": "Washing machine front panel sticker",
+      "description": "A torn sticker and adhesive residue on the front of the washing machine were recorded at move-in. This spot is not shown in the move-out video.",
+      "severity": "minor",
+      "confidence": "high",
+      "uncertainty_reason": "",
+      "fix_before_leaving": false,
+      "room": "Kitchen",
+      "before_time_s": 11.4,
+      "before_path": "data/frames/kitchen_in_011.jpg",
+      "after_time_s": 3.0,
+      "after_path": "data/frames/kitchen_out_003.jpg",
+      "before_box": [
+        0.12152777777777778,
+        0.7958984375,
+        0.4340277777777778,
+        0.986328125
+      ],
+      "after_box": null,
+      "responsibility": "Not tenant's \u2013 cosmetic",
+      "responsibility_reason": "This was already there when you moved in. Tenants can be charged for damage they cause, such as holes or stains, so recording it now protects your deposit.",
+      "responsibility_source": "Shelter \u2013 Deposit deductions for damage and missing items",
+      "responsibility_url": "https://england.shelter.org.uk/housing_advice/tenancy_deposits/what_can_your_landlord_deduct_from_your_deposit/damage_and_missing_items"
     }
   ],
-  "summary": "All the damage visible in this kitchen matches what was recorded at move-in: worn cabinet trims, the pelmet gap, the cable, the failed sealant and the washing machine marks. You should not be charged for any of it. The only thing to sort out is clearing your belongings off the worktops, sink and floor and giving the surfaces and washing machine seal a good clean before you hand back the keys."
+  "summary": "No new damage is visible in the kitchen. The worn cabinet trim, the missing sealant by the sink and the washing machine seal and sticker issues were all recorded at move-in, so you should not be charged for them. Before handing back the keys, clear all your items off the worktops, sink area and floor and give the surfaces a wipe, and film the washing machine seal close up as evidence."
 }

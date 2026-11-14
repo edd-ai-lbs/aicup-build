@@ -6,8 +6,13 @@ changes (new issues arrive, the step moves on), not on every click.
 """
 
 import html
+import tempfile
+from pathlib import Path
 
+import cv2
 import streamlit as st
+
+FRAMES_DIR = Path(tempfile.gettempdir()) / "movein_frames"
 
 CSS = """
 <style>
@@ -154,3 +159,32 @@ def step_bar(current, pop=False):
             state, dot = "todo", str(n)
         items.append(f'<li class="{state}"><span class="dot">{dot}</span>{label}</li>')
     st.markdown(f'<ol class="edd-steps">{"".join(items)}</ol>', unsafe_allow_html=True)
+
+
+@st.cache_data
+def outlined(photo, box):
+    """Copy of the photo with the problem outlined in Edd.AI green; the photo itself if there's no box."""
+    image = cv2.imread(photo)
+    if image is None or not box:
+        return photo
+    h, w = image.shape[:2]
+    pad = 0.02  # a little room around the damage
+    x0, y0 = int(max(0, box[0] - pad) * w), int(max(0, box[1] - pad) * h)
+    x1, y1 = int(min(1, box[2] + pad) * w), int(min(1, box[3] + pad) * h)
+    thick = max(3, w // 160)
+    cv2.rectangle(image, (x0, y0), (x1, y1), (153, 211, 52), thick + 4)  # mint halo (BGR)
+    cv2.rectangle(image, (x0, y0), (x1, y1), (87, 120, 4), thick)        # emerald line
+    FRAMES_DIR.mkdir(exist_ok=True)
+    out = FRAMES_DIR / f"{Path(photo).stem}_box_{abs(hash(tuple(box)))}.jpg"
+    cv2.imwrite(str(out), image)
+    return str(out)
+
+
+def box_of(issue):
+    """The issue's box as a tuple of 4 numbers, or None (missing, empty or broken by the table)."""
+    box = issue.get("box")
+    try:
+        box = tuple(float(v) for v in box)
+    except (TypeError, ValueError):
+        return None
+    return box if len(box) == 4 and box[2] > box[0] and box[3] > box[1] else None

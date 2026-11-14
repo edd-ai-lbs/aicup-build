@@ -1,6 +1,7 @@
 """Edd.AI – move-in report tab (opened from app/main.py, which runs the whole app)."""
 
 import re
+from urllib.parse import quote
 import sys
 import tempfile
 from pathlib import Path
@@ -14,9 +15,10 @@ sys.path.append(str(ROOT))  # so we can import from the report/ and pipeline/ fo
 sys.path.append(str(ROOT / "app"))  # and app/ui.py
 from pipeline.analyse import analyse_room  # noqa: E402  (Francesca's AI: video -> issues)
 from pipeline.voice_note import add_voice_note  # noqa: E402  (Francesca's AI: voice note -> issues)
+from pipeline.landlord_email import write_email  # noqa: E402
 from pipeline.inventory import compare_inventory  # noqa: E402  (Francesca's AI: agency inventory vs videos)
 from report.make_report import make_pdf  # noqa: E402
-from ui import badges, is_phone, step_bar  # noqa: E402  (app/ui.py: Edd.AI theme helpers)
+from ui import badges, box_of, is_phone, outlined, step_bar  # noqa: E402  (app/ui.py: Edd.AI theme helpers)
 
 PHONE = is_phone()  # phones get folded "Edit details" and a smaller video player
 
@@ -80,35 +82,6 @@ def grab_frame(video_path, seconds):
     path = FRAMES_DIR / f"{Path(video_path).stem}_{int(seconds):04d}.jpg"
     cv2.imwrite(str(path), frame)
     return str(path)
-
-
-@st.cache_data
-def outlined(photo, box):
-    """Copy of the photo with the problem outlined in Edd.AI green; the photo itself if there's no box."""
-    image = cv2.imread(photo)
-    if image is None or not box:
-        return photo
-    h, w = image.shape[:2]
-    pad = 0.02  # a little room around the damage
-    x0, y0 = int(max(0, box[0] - pad) * w), int(max(0, box[1] - pad) * h)
-    x1, y1 = int(min(1, box[2] + pad) * w), int(min(1, box[3] + pad) * h)
-    thick = max(3, w // 160)
-    cv2.rectangle(image, (x0, y0), (x1, y1), (153, 211, 52), thick + 4)  # mint halo (BGR)
-    cv2.rectangle(image, (x0, y0), (x1, y1), (87, 120, 4), thick)        # emerald line
-    FRAMES_DIR.mkdir(exist_ok=True)
-    out = FRAMES_DIR / f"{Path(photo).stem}_box_{abs(hash(tuple(box)))}.jpg"
-    cv2.imwrite(str(out), image)
-    return str(out)
-
-
-def box_of(issue):
-    """The issue's box as a tuple of 4 numbers, or None (missing, empty or broken by the table)."""
-    box = issue.get("box")
-    try:
-        box = tuple(float(v) for v in box)
-    except (TypeError, ValueError):
-        return None
-    return box if len(box) == 4 and box[2] > box[0] and box[3] > box[1] else None
 
 
 def add_frames(issues):
@@ -366,8 +339,14 @@ else:
                 text_col.markdown(f"**{text_or_blank(finding.get('room'))} – {text_or_blank(finding.get('item'))}**")
                 text_col.markdown(f"Inventory says: _{text_or_blank(finding.get('inventory_says')) or 'nothing'}_  \n"
                                   f"Your video shows: _{text_or_blank(finding.get('video_shows')) or 'nothing'}_")
+                if finding.get("status") in ("missing_from_inventory", "inventory_only"):  # you choose what to raise
+                    finding["raise"] = text_col.checkbox(
+                        "Raise this with the agency", value=finding.get("status") == "missing_from_inventory",
+                        key=f"raise_{st.session_state.get('inventory_version', 0)}_{key}")
                 if photo_col:
-                    photo_col.image(photo, width=160)
+                    match = next((i for i in st.session_state.edited  # the issue this photo came from
+                                  if text_or_blank(i.get("frame_path")) == photo), {})
+                    photo_col.image(outlined(photo, box_of(match)), width=160)
                 # Rewatch: find the video via the matching issue's photo (room names can differ slightly)
                 seconds = finding.get("frame_time_s")
                 room = next((i["room"] for i in st.session_state.edited
@@ -395,10 +374,31 @@ else:
                 for n, finding in enumerate(found):
                     show_finding(finding, f"{status}_{n}")
 
-        reply = st.text_area("Your reply to the agency", value=result["reply"], height=250,
-                             key=f"inventory_reply_{st.session_state.get('inventory_version', 0)}")
-        st.download_button("Save reply as a text file", data=reply, file_name="reply-to-agency.txt",
-                           mime="text/plain")
+        # Reply built from the ticked findings only
+        chosen = [(n, f) for n, f in enumerate(result["findings"]) if f.get("raise")]
+        if not chosen:
+            st.info("Tick 'Raise this with the agency' on the issues above to build your reply.")
+        else:
+            points = []
+            for _, f in chosen:
+                where = f"{text_or_blank(f.get('room'))} – {text_or_blank(f.get('item'))}"
+                shows = text_or_blank(f.get("video_shows")) or "no sign of this"
+                if f.get("status") == "missing_from_inventory":
+                    points.append(f"- {where}: not recorded in the inventory. My video shows: {shows}.")
+                else:
+                    points.append(f"- {where}: the inventory says \"{text_or_blank(f.get('inventory_says'))}\", "
+                                  f"but my video shows: {shows}.")
+            reply_text = ("Dear [agency],\n\nThank you for the check-in inventory. I've compared it with my own "
+                          "move-in videos and photo report (attached), and I'd like the following added or "
+                          "corrected so the inventory reflects the property's condition at move-in:\n\n"
+                          + "\n".join(points)
+                          + "\n\nPlease confirm in writing that the inventory has been updated.\n\nKind regards,\n"
+                          + (tenant_name or "[your name]"))
+            picked = "-".join(str(n) for n, _ in chosen)
+            reply = st.text_area("Your reply to the agency", value=reply_text, height=250,
+                                 key=f"inventory_reply_{st.session_state.get('inventory_version', 0)}_{picked}")
+            st.download_button("Save reply as a text file", data=reply, file_name="reply-to-agency.txt",
+                               mime="text/plain")
         st.caption("Agencies usually ask for comments within a few days. Send this soon, and keep a copy.")
 
     # 4. Download the report
@@ -414,5 +414,30 @@ else:
             type="primary",
             on_click=lambda: st.session_state.update(downloaded=True),
         )
+
+    # 5. Email your landlord: AI-written, citing the GOV.UK / Shelter source of each rule
+    st.header("5. Email your landlord")
+    st.caption("Send the report on move-in day, so there's a dated record. Attach the PDF you just downloaded.")
+    landlord_col, to_col = st.columns(2)
+    landlord_name = landlord_col.text_input("Landlord or agent's name", placeholder="e.g. Mr Patel / Foxtons")
+    landlord_email = to_col.text_input("Their email address", placeholder="e.g. lettings@agency.co.uk")
+    if st.button("Write the email for me", type="primary"):
+        try:
+            with st.spinner("Writing your email..."):
+                st.session_state.email = write_email(st.session_state.edited, tenant_name, property_address,
+                                                     landlord_name)
+        except Exception as e:  # e.g. missing API key, no internet
+            st.error(f"Sorry, the email didn't work: {e}. Please try again.")
+            st.stop()
+        st.session_state.email_version = st.session_state.get("email_version", 0) + 1
+    email = st.session_state.get("email")
+    if email:
+        ev = st.session_state.get("email_version", 0)
+        subject = st.text_input("Subject", value=email["subject"], key=f"email_subject_{ev}")
+        body = st.text_area("Email", value=email["body"], height=420, key=f"email_body_{ev}")
+        mailto = (f"mailto:{quote(landlord_email.strip())}?subject={quote(subject)}&body={quote(body)}")
+        st.link_button("Open in your email app", mailto, type="primary")
+        st.caption("Your email app opens with this text filled in. Attach the PDF report before sending. "
+                   "General guidance, not legal advice.")
 
 st.caption("General guidance, not legal advice. See GOV.UK, Shelter or Citizens Advice for help with deposits.")
