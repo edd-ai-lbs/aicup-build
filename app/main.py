@@ -2,7 +2,6 @@
     python3 -m streamlit run app/main.py
 """
 
-import json
 import sys
 import tempfile
 from pathlib import Path
@@ -12,7 +11,8 @@ import pandas as pd
 import streamlit as st
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.append(str(ROOT))  # so we can import from the report/ folder
+sys.path.append(str(ROOT))  # so we can import from the report/ and pipeline/ folders
+from pipeline.analyse import analyse_room  # noqa: E402  (Francesca's AI: video -> issues)
 from report.make_report import make_pdf  # noqa: E402
 
 ROOMS = ["Kitchen", "Living room", "Bedroom 1", "Bedroom 2", "Bathroom", "Hallway"]
@@ -26,22 +26,6 @@ def cap(text):
     """Capital first letter, rest unchanged ('tv stand' -> 'Tv stand', 'TV stand' stays)."""
     text = str(text).strip()
     return text[:1].upper() + text[1:]
-
-
-def analyse_room(video_path, room):
-    # PLACEHOLDER until Francesca's pipeline is ready: returns made-up issues,
-    # spread evenly across the video so each one has a photo.
-    # Later this becomes: from pipeline.<module> import analyse_room
-    issues = json.loads((ROOT / "app" / "sample_issues.json").read_text())
-    cap_ = cv2.VideoCapture(video_path)
-    fps, frames = cap_.get(cv2.CAP_PROP_FPS), cap_.get(cv2.CAP_PROP_FRAME_COUNT)
-    cap_.release()
-    duration = frames / fps if fps > 0 and frames > 0 else 0
-    for n, issue in enumerate(issues, start=1):
-        issue["room"] = room
-        if duration:
-            issue["frame_time_s"] = round(duration * n / (len(issues) + 1), 1)
-    return issues
 
 
 def guess_responsibility(issue):
@@ -113,8 +97,12 @@ if video and room:
     if st.button(f"Find issues in: {room}", type="primary"):
         with tempfile.NamedTemporaryFile(suffix=Path(video.name).suffix, delete=False) as f:
             f.write(video.getbuffer())
-        with st.spinner("Looking for damage..."):
-            new_issues = analyse_room(f.name, room)
+        try:
+            with st.spinner("Looking for damage and listening to your comments – this takes about a minute..."):
+                new_issues = analyse_room(f.name, room)
+        except Exception as e:  # e.g. missing API key, no internet – show a message instead of crashing
+            st.error(f"Sorry, the analysis didn't work: {e}. Please try again.")
+            st.stop()
         st.session_state.videos[room] = f.name
         if room not in st.session_state.rooms:  # added here, not on typing, so the dropdown doesn't jump back
             st.session_state.rooms.append(room)
