@@ -1,0 +1,6 @@
+streamlit
+opencv-python-headless
+anthropic
+elevenlabs
+python-dotenv
+fpdf2
