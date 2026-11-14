@@ -18,7 +18,7 @@ from pipeline.voice_note import add_voice_note  # noqa: E402  (Francesca's AI: v
 from pipeline.landlord_email import write_email  # noqa: E402
 from pipeline.inventory import compare_inventory  # noqa: E402  (Francesca's AI: agency inventory vs videos)
 from report.make_report import make_pdf  # noqa: E402
-from ui import badges, step_bar  # noqa: E402  (app/ui.py: Edd.AI theme helpers)
+from ui import badges, box_of, outlined, step_bar  # noqa: E402  (app/ui.py: Edd.AI theme helpers)
 
 ROOMS = ["Kitchen", "Living room", "Bedroom 1", "Bedroom 2", "Bathroom", "Hallway"]
 SEVERITY = ["Minor", "Moderate", "Major"]
@@ -80,35 +80,6 @@ def grab_frame(video_path, seconds):
     path = FRAMES_DIR / f"{Path(video_path).stem}_{int(seconds):04d}.jpg"
     cv2.imwrite(str(path), frame)
     return str(path)
-
-
-@st.cache_data
-def outlined(photo, box):
-    """Copy of the photo with the problem outlined in Edd.AI green; the photo itself if there's no box."""
-    image = cv2.imread(photo)
-    if image is None or not box:
-        return photo
-    h, w = image.shape[:2]
-    pad = 0.02  # a little room around the damage
-    x0, y0 = int(max(0, box[0] - pad) * w), int(max(0, box[1] - pad) * h)
-    x1, y1 = int(min(1, box[2] + pad) * w), int(min(1, box[3] + pad) * h)
-    thick = max(3, w // 160)
-    cv2.rectangle(image, (x0, y0), (x1, y1), (153, 211, 52), thick + 4)  # mint halo (BGR)
-    cv2.rectangle(image, (x0, y0), (x1, y1), (87, 120, 4), thick)        # emerald line
-    FRAMES_DIR.mkdir(exist_ok=True)
-    out = FRAMES_DIR / f"{Path(photo).stem}_box_{abs(hash(tuple(box)))}.jpg"
-    cv2.imwrite(str(out), image)
-    return str(out)
-
-
-def box_of(issue):
-    """The issue's box as a tuple of 4 numbers, or None (missing, empty or broken by the table)."""
-    box = issue.get("box")
-    try:
-        box = tuple(float(v) for v in box)
-    except (TypeError, ValueError):
-        return None
-    return box if len(box) == 4 and box[2] > box[0] and box[3] > box[1] else None
 
 
 def add_frames(issues):
@@ -359,6 +330,10 @@ else:
                 text_col.markdown(f"**{text_or_blank(finding.get('room'))} – {text_or_blank(finding.get('item'))}**")
                 text_col.markdown(f"Inventory says: _{text_or_blank(finding.get('inventory_says')) or 'nothing'}_  \n"
                                   f"Your video shows: _{text_or_blank(finding.get('video_shows')) or 'nothing'}_")
+                if finding.get("status") in ("missing_from_inventory", "inventory_only"):  # you choose what to raise
+                    finding["raise"] = text_col.checkbox(
+                        "Raise this with the agency", value=finding.get("status") == "missing_from_inventory",
+                        key=f"raise_{st.session_state.get('inventory_version', 0)}_{key}")
                 if photo_col:
                     match = next((i for i in st.session_state.edited  # the issue this photo came from
                                   if text_or_blank(i.get("frame_path")) == photo), {})
@@ -390,10 +365,31 @@ else:
                 for n, finding in enumerate(found):
                     show_finding(finding, f"{status}_{n}")
 
-        reply = st.text_area("Your reply to the agency", value=result["reply"], height=250,
-                             key=f"inventory_reply_{st.session_state.get('inventory_version', 0)}")
-        st.download_button("Save reply as a text file", data=reply, file_name="reply-to-agency.txt",
-                           mime="text/plain")
+        # Reply built from the ticked findings only
+        chosen = [(n, f) for n, f in enumerate(result["findings"]) if f.get("raise")]
+        if not chosen:
+            st.info("Tick 'Raise this with the agency' on the issues above to build your reply.")
+        else:
+            points = []
+            for _, f in chosen:
+                where = f"{text_or_blank(f.get('room'))} – {text_or_blank(f.get('item'))}"
+                shows = text_or_blank(f.get("video_shows")) or "no sign of this"
+                if f.get("status") == "missing_from_inventory":
+                    points.append(f"- {where}: not recorded in the inventory. My video shows: {shows}.")
+                else:
+                    points.append(f"- {where}: the inventory says \"{text_or_blank(f.get('inventory_says'))}\", "
+                                  f"but my video shows: {shows}.")
+            reply_text = ("Dear [agency],\n\nThank you for the check-in inventory. I've compared it with my own "
+                          "move-in videos and photo report (attached), and I'd like the following added or "
+                          "corrected so the inventory reflects the property's condition at move-in:\n\n"
+                          + "\n".join(points)
+                          + "\n\nPlease confirm in writing that the inventory has been updated.\n\nKind regards,\n"
+                          + (tenant_name or "[your name]"))
+            picked = "-".join(str(n) for n, _ in chosen)
+            reply = st.text_area("Your reply to the agency", value=reply_text, height=250,
+                                 key=f"inventory_reply_{st.session_state.get('inventory_version', 0)}_{picked}")
+            st.download_button("Save reply as a text file", data=reply, file_name="reply-to-agency.txt",
+                               mime="text/plain")
         st.caption("Agencies usually ask for comments within a few days. Send this soon, and keep a copy.")
 
     # 4. Download the report
