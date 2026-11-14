@@ -2,6 +2,7 @@
 
 import base64
 import json
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import anthropic
@@ -129,6 +130,9 @@ def compare_frames(room, before_frames, after_frames, before_issues=None, after_
 def compare_room_videos(move_in_video, move_out_video, room, move_in_issues=None):
     """For the app: two videos of the same room -> before/after findings. About 20 frames from each."""
     name = room.lower().replace(" ", "_") or "room"
-    before = extract_frames(move_in_video, name=f"{name}_in", max_frames=20)
-    after = extract_frames(move_out_video, name=f"{name}_out", max_frames=20)
-    return compare_frames(room, before, after, move_in_issues, transcribe(move_out_video))
+    with ThreadPoolExecutor(3) as pool:  # both videos' pictures and the voice, at the same time
+        before = pool.submit(extract_frames, move_in_video, name=f"{name}_in", max_frames=20)
+        after = pool.submit(extract_frames, move_out_video, name=f"{name}_out", max_frames=20)
+        sentences = pool.submit(transcribe, move_out_video)
+        before, after, sentences = before.result(), after.result(), sentences.result()
+    return compare_frames(room, before, after, move_in_issues, sentences)

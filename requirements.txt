@@ -5,3 +5,4 @@ elevenlabs
 python-dotenv
 fpdf2
 pypdf
+imageio-ffmpeg

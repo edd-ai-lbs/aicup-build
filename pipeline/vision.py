@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import anthropic
+import cv2
 from dotenv import load_dotenv
 
 load_dotenv()  # reads ANTHROPIC_API_KEY from .env
@@ -74,9 +75,16 @@ SCHEMA = {
                     "note": {"type": "string"},
                     "confidence": {"type": "string", "enum": ["high", "medium", "low"]},
                     "uncertainty_reason": {"type": "string"},
+                    "box": {  # where the problem is in that frame, in pixels
+                        "type": "object",
+                        "properties": {"x0": {"type": "number"}, "y0": {"type": "number"},
+                                       "x1": {"type": "number"}, "y1": {"type": "number"}},
+                        "required": ["x0", "y0", "x1", "y1"],
+                        "additionalProperties": False,
+                    },
                     "rule_id": {"type": "string", "enum": list(RULES_BY_ID)},
                 },
-                "required": ["room", "item", "issue", "severity", "frame_time_s", "note",
+                "required": ["room", "item", "issue", "severity", "frame_time_s", "note", "box",
                              "confidence", "uncertainty_reason", "rule_id"],
                 "additionalProperties": False,
             },
@@ -90,16 +98,21 @@ SCHEMA = {
 def find_issues(frames, sentences=None):
     """frames: output of extract_frames(). sentences: optional output of voice.transcribe().
     Returns a list of issue dicts (shared format)."""
-    content = []
+    content, sizes = [], {}
     for f in frames:
         with open(f["frame_path"], "rb") as img:
             data = base64.standard_b64encode(img.read()).decode("utf-8")
-        content.append({"type": "text", "text": f"Frame at {f['frame_time_s']} s:"})
+        h, w = cv2.imread(f["frame_path"]).shape[:2]
+        sizes[f["frame_time_s"]] = (w, h)
+        content.append({"type": "text", "text": f"Frame at {f['frame_time_s']} s ({w}x{h} px):"})
         content.append({"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": data}})
     prompt = PROMPT.format(rules="\n".join(f'- "{r["id"]}": {r["covers"]}' for r in RULES))
     if sentences:
         transcript = "\n".join(f"{s['start_s']} s: {s['text']}" for s in sentences)
         prompt += VOICE_PROMPT.format(transcript=transcript)
+    prompt += ('\n\nFor each issue, "box" is a rectangle around the problem in the frame given by "frame_time_s", '
+               "in that frame's pixels (x0, y0 top-left; x1, y1 bottom-right). Keep it snug around the damage itself. "
+               "For a problem no picture shows (e.g. only mentioned by the tenant), use 0, 0, 0, 0.")
     content.append({"type": "text", "text": prompt})
 
     response = anthropic.Anthropic().beta.messages.create(
@@ -129,6 +142,10 @@ def find_issues(frames, sentences=None):
         nearest = min(frames, key=lambda f: abs(f["frame_time_s"] - issue["frame_time_s"]))
         issue["frame_time_s"] = nearest["frame_time_s"]
         issue["frame_path"] = nearest["frame_path"]
+        # Box as fractions of the picture (0-1), so it fits any copy of the frame; None if there is none
+        b, (w, h) = issue.pop("box"), sizes[nearest["frame_time_s"]]
+        box = [max(0.0, min(1.0, v)) for v in (b["x0"] / w, b["y0"] / h, b["x1"] / w, b["y1"] / h)]
+        issue["box"] = box if box[2] - box[0] > 0.01 and box[3] - box[1] > 0.01 else None
         issue["confirmed"] = True  # ticked by default; the user unticks wrong ones in the app
     return issues
 
