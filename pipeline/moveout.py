@@ -8,6 +8,7 @@ from pathlib import Path
 import anthropic
 from dotenv import load_dotenv
 
+from pipeline.analyse import CACHE_DIR, _fingerprint  # same demo fallback as the move-in report
 from pipeline.frames import extract_frames
 from pipeline.voice import transcribe
 
@@ -128,11 +129,29 @@ def compare_frames(room, before_frames, after_frames, before_issues=None, after_
 
 
 def compare_room_videos(move_in_video, move_out_video, room, move_in_issues=None):
-    """For the app: two videos of the same room -> before/after findings. About 20 frames from each."""
+    """For the app: two videos of the same room -> before/after findings. About 20 frames from each.
+    Demo fallback: results are saved in data/demo_cache/moveout_<fingerprints>.json; the same pair of
+    videos again returns them in seconds (pictures are still taken from the videos for the photos)."""
     name = room.lower().replace(" ", "_") or "room"
+    cache = CACHE_DIR / f"moveout_{_fingerprint(move_in_video)}_{_fingerprint(move_out_video)}.json"
     with ThreadPoolExecutor(3) as pool:  # both videos' pictures and the voice, at the same time
         before = pool.submit(extract_frames, move_in_video, name=f"{name}_in", max_frames=20)
         after = pool.submit(extract_frames, move_out_video, name=f"{name}_out", max_frames=20)
-        sentences = pool.submit(transcribe, move_out_video)
-        before, after, sentences = before.result(), after.result(), sentences.result()
-    return compare_frames(room, before, after, move_in_issues, sentences)
+        sentences = None if cache.exists() else pool.submit(transcribe, move_out_video)
+        before, after = before.result(), after.result()
+        sentences = sentences.result() if sentences else None
+
+    if cache.exists():
+        print(f"Using saved AI results for these videos: {cache.name}")
+        result = json.loads(cache.read_text())
+        for f in result["findings"]:  # point each finding at this run's pictures
+            for side, frames in (("before", before), ("after", after)):
+                pick = _nearest(frames, f.get(f"{side}_time_s"))
+                if pick:
+                    f[f"{side}_time_s"], f[f"{side}_path"] = pick["frame_time_s"], pick["frame_path"]
+        return result
+
+    result = compare_frames(room, before, after, move_in_issues, sentences)
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    cache.write_text(json.dumps(result, indent=2))
+    return result
