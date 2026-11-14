@@ -105,8 +105,14 @@ CSS = """
 /* Phones: tab buttons, smaller headings, thumb-sized buttons, compact cards */
 .st-key-mobile_nav { display: none; }
 @media (max-width: 640px) {
-  [data-testid="stMainBlockContainer"] { padding-top: 3.6rem !important; }  /* less empty space under the logo */
-  .st-key-mobile_nav { display: block; margin: 0 -8px 8px; padding-bottom: 6px; border-bottom: 1px solid #E5E9E8; }
+  /* Room at the bottom so the tab bar never covers the last button */
+  [data-testid="stMainBlockContainer"] { padding-top: 3.6rem !important; padding-bottom: 96px !important; }
+  /* Tab bar fixed to the bottom of the screen (thumb reach), above the iPhone home bar */
+  .st-key-mobile_nav {
+    display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000; margin: 0;
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); background: #FFFFFF;
+    border-top: 1px solid #E5E9E8; box-shadow: 0 -4px 16px rgba(11, 46, 36, .06);
+  }
   /* Four identical tabs, styled like the laptop tabs: plain text, current one on a soft grey background */
   .st-key-mobile_nav [data-testid="stHorizontalBlock"] {
     display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px !important;
@@ -115,7 +121,7 @@ CSS = """
   .st-key-mobile_nav [class*="st-key-tab_"], .st-key-mobile_nav [data-testid="stElementContainer"],
   .st-key-mobile_nav [data-testid="stPageLink"], .st-key-mobile_nav [data-testid="stPageLink"] a { width: 100% !important; }
   .st-key-mobile_nav [data-testid="stPageLink"] a {
-    justify-content: center; height: 38px; padding: 0 2px; margin: 0; border-radius: 8px; background: transparent;
+    justify-content: center; height: 44px; padding: 0 2px; margin: 0; border-radius: 10px; background: transparent;
   }
   .st-key-mobile_nav [data-testid="stPageLink"] a p { font-size: .9rem; font-weight: 500; color: #111827; white-space: nowrap; }
   .st-key-mobile_nav [class*="_on"] [data-testid="stPageLink"] a { background: #E8EDEB; }

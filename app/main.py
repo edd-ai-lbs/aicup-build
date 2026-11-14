@@ -23,8 +23,8 @@ pages = [
 ]
 page = st.navigation(pages, position="top")
 
-# On phones the tabs above fold into a small "»" menu, so show a row of tab buttons too (hidden on computers, see ui.py).
-with st.container(key="mobile_nav"):
+# On phones the tabs above fold into a small "»" menu, so show all four tabs at the bottom (hidden on computers).
+with st.container(key="mobile_nav"):  # fixed to the bottom of the screen on phones (see ui.py)
     for col, p, label in zip(st.columns(4), pages, ["Home", "Move-in", "Move-out", "Checklist"]):
         # Every tab is the same kind of link (keeps your session); the key marks the current one for the CSS.
         with col.container(key=f"tab_{p.url_path or 'home'}_{'on' if p.url_path == page.url_path else 'off'}"):
