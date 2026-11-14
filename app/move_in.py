@@ -140,7 +140,13 @@ video = st.file_uploader("Upload the video", type=["mp4", "mov", "m4v"], key=f"u
 st.caption("📱 Tip: film in 1080p (iPhone: Settings → Camera → Record Video), about 1 minute per room. "
            "Smaller videos upload much faster on mobile data.")
 if video and room:
-    st.video(video, width=360)
+    # Don't play the upload back on phones (or for big files): it re-sends the whole video to the phone,
+    # which stalls on mobile data and blocks the button below. A short confirmation is enough.
+    size_mb = video.size / 1e6
+    if PHONE or size_mb > 100:
+        st.success(f"✅ Uploaded: {video.name} ({size_mb:.0f} MB). Ready when you are.")
+    else:
+        st.video(video, width=360)
     if st.button(f"Find issues in: {room}", type="primary"):
         with tempfile.NamedTemporaryFile(suffix=Path(video.name).suffix, delete=False) as f:
             f.write(video.getbuffer())
