@@ -51,6 +51,19 @@ def ai_check(issue):
     return "Added by you"  # voice-note and hand-added rows have no AI confidence
 
 
+def with_inventory_points(body, points):
+    """Add the ticked agency-inventory corrections to the email, just before the sign-off."""
+    if not points:
+        return body
+    paragraph = ("I have also compared your check-in inventory with my move-in videos. Please add or correct "
+                 "the following so the inventory matches the property's condition at move-in:\n"
+                 + "\n".join(points) + "\n\nPlease confirm in writing once the inventory has been updated.")
+    lines = body.rstrip().split("\n")
+    sign_off = re.compile(r"^\s*(kind regards|best regards|best wishes|many thanks|thanks|regards|yours)", re.I)
+    at = max((n for n, line in enumerate(lines) if sign_off.match(line)), default=len(lines))
+    return "\n".join(lines[:at]).rstrip() + "\n\n" + paragraph + "\n\n" + "\n".join(lines[at:]).strip()
+
+
 def video_time(seconds):
     """32.0 -> '0:32'."""
     s = int(seconds)
@@ -271,9 +284,17 @@ else:
     st.caption("Record a short voice note, e.g. \"In the bathroom the hot tap drips\". "
                "New problems are added to the list; comments on ones already there go in their note.")
     voice = st.audio_input("Record a voice note", key=f"voice_{st.session_state.version}")
-    if voice and st.button("Add to report"):
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
-            f.write(voice.getbuffer())
+    # Phone browsers (especially links opened inside WhatsApp/Instagram) often block the microphone,
+    # so also accept a voice memo recorded with the phone's own recorder app.
+    memo = st.file_uploader("…or upload a voice memo", type=["m4a", "mp3", "wav", "aac", "ogg", "webm"],
+                            key=f"memo_{st.session_state.version}")
+    st.caption("Microphone not working? Open the app in Safari or Chrome (not inside WhatsApp), allow the "
+               "microphone, or record a voice memo on your phone and upload it here.")
+    audio = voice or memo
+    if audio and st.button("Add to report"):
+        suffix = Path(getattr(audio, "name", "") or "note.wav").suffix or ".wav"
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as f:
+            f.write(audio.getbuffer())
         try:
             with st.spinner("Listening to your note..."):
                 current = st.session_state.edited
@@ -380,32 +401,21 @@ else:
                 for n, finding in enumerate(found):
                     show_finding(finding, f"{status}_{n}")
 
-        # Reply built from the ticked findings only
-        chosen = [(n, f) for n, f in enumerate(result["findings"]) if f.get("raise")]
-        if not chosen:
-            st.info("Tick 'Raise this with the agency' on the issues above to build your reply.")
-        else:
-            points = []
-            for _, f in chosen:
-                where = f"{text_or_blank(f.get('room'))} – {text_or_blank(f.get('item'))}"
-                shows = text_or_blank(f.get("video_shows")) or "no sign of this"
-                if f.get("status") == "missing_from_inventory":
-                    points.append(f"- {where}: not recorded in the inventory. My video shows: {shows}.")
-                else:
-                    points.append(f"- {where}: the inventory says \"{text_or_blank(f.get('inventory_says'))}\", "
-                                  f"but my video shows: {shows}.")
-            reply_text = ("Dear [agency],\n\nThank you for the check-in inventory. I've compared it with my own "
-                          "move-in videos and photo report (attached), and I'd like the following added or "
-                          "corrected so the inventory reflects the property's condition at move-in:\n\n"
-                          + "\n".join(points)
-                          + "\n\nPlease confirm in writing that the inventory has been updated.\n\nKind regards,\n"
-                          + (tenant_name or "[your name]"))
-            picked = "-".join(str(n) for n, _ in chosen)
-            reply = st.text_area("Your reply to the agency", value=reply_text, height=250,
-                                 key=f"inventory_reply_{st.session_state.get('inventory_version', 0)}_{picked}")
-            st.download_button("Save reply as a text file", data=reply, file_name="reply-to-agency.txt",
-                               mime="text/plain")
-        st.caption("Agencies usually ask for comments within a few days. Send this soon, and keep a copy.")
+        # The ticked findings go into the email in section 5 (no separate reply box)
+        points = []
+        for f in result["findings"]:
+            if not f.get("raise"):
+                continue
+            where = f"{text_or_blank(f.get('room'))} – {text_or_blank(f.get('item'))}"
+            shows = text_or_blank(f.get("video_shows")) or "no sign of this"
+            if f.get("status") == "missing_from_inventory":
+                points.append(f"- {where}: not recorded in the inventory. My video shows: {shows}.")
+            else:
+                points.append(f"- {where}: the inventory says \"{text_or_blank(f.get('inventory_says'))}\", "
+                              f"but my video shows: {shows}.")
+        st.session_state.inventory_points = points
+        st.caption(f"{len(points)} point(s) ticked: they're added to your email in section 5. "
+                   "Agencies usually ask for comments within a few days, so send it soon and keep a copy.")
 
     # 4. Download the report
     st.header("4. Download your report")
@@ -439,8 +449,10 @@ else:
     email = st.session_state.get("email")
     if email:
         ev = st.session_state.get("email_version", 0)
+        points = st.session_state.get("inventory_points", []) if st.session_state.get("inventory_result") else []
         subject = st.text_input("Subject", value=email["subject"], key=f"email_subject_{ev}")
-        body = st.text_area("Email", value=email["body"], height=420, key=f"email_body_{ev}")
+        body = st.text_area("Email", value=with_inventory_points(email["body"], points), height=420,
+                            key=f"email_body_{ev}_{len(points)}_{hash(tuple(points))}")
         mailto = (f"mailto:{quote(landlord_email.strip())}?subject={quote(subject)}&body={quote(body)}")
         st.link_button("Open in your email app", mailto, type="primary")
         st.caption("Your email app opens with this text filled in. Attach the PDF report before sending. "
