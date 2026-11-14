@@ -1,11 +1,14 @@
 """Agency inventory (PDF) vs what the tenant's videos found -> disagreements + a draft reply."""
 
 import base64
+import hashlib
 import json
 
 import anthropic
 from dotenv import load_dotenv
 from pypdf import PdfReader
+
+from pipeline.analyse import CACHE_DIR, _fingerprint  # same demo fallback as the move-in report
 
 load_dotenv()
 
@@ -80,6 +83,27 @@ def compare_inventory(pdf_path, issues, rooms_filmed):
     ) or "(no issues found)"
     prompt = PROMPT.format(issues=listing, rooms=", ".join(rooms_filmed) or "(none)")
 
+    # Demo fallback: same inventory PDF + same issues -> the saved answer, in a second
+    key = hashlib.sha256((_fingerprint(pdf_path) + prompt).encode()).hexdigest()[:16]
+    cache = CACHE_DIR / f"inventory_{key}.json"
+    if cache.exists():
+        print(f"Using saved AI results for this inventory: {cache.name}")
+        result = json.loads(cache.read_text())
+    else:
+        result = _ask_claude(inventory, prompt)
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        cache.write_text(json.dumps(result, indent=2))
+
+    for finding in result["findings"]:
+        n = finding.pop("issue_number")
+        linked = issues[n] if 0 <= n < len(issues) else {}
+        finding["frame_time_s"] = linked.get("frame_time_s")
+        finding["frame_path"] = _text(linked.get("frame_path"))
+    result["findings"].sort(key=lambda f: STATUSES.index(f["status"]))
+    return result
+
+
+def _ask_claude(inventory, prompt):
     response = anthropic.Anthropic().beta.messages.create(
         model="claude-opus-5-5",
         max_tokens=16000,
@@ -90,12 +114,4 @@ def compare_inventory(pdf_path, issues, rooms_filmed):
     )
     if response.stop_reason == "refusal":
         raise RuntimeError("Claude declined to compare this inventory.")
-    result = json.loads(next(b.text for b in response.content if b.type == "text"))
-
-    for finding in result["findings"]:
-        n = finding.pop("issue_number")
-        linked = issues[n] if 0 <= n < len(issues) else {}
-        finding["frame_time_s"] = linked.get("frame_time_s")
-        finding["frame_path"] = _text(linked.get("frame_path"))
-    result["findings"].sort(key=lambda f: STATUSES.index(f["status"]))
-    return result
+    return json.loads(next(b.text for b in response.content if b.type == "text"))
