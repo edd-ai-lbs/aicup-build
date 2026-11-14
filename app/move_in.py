@@ -1,6 +1,7 @@
 """Edd.AI – move-in report tab (opened from app/main.py, which runs the whole app)."""
 
 import re
+from urllib.parse import quote
 import sys
 import tempfile
 from pathlib import Path
@@ -14,6 +15,7 @@ sys.path.append(str(ROOT))  # so we can import from the report/ and pipeline/ fo
 sys.path.append(str(ROOT / "app"))  # and app/ui.py
 from pipeline.analyse import analyse_room  # noqa: E402  (Francesca's AI: video -> issues)
 from pipeline.voice_note import add_voice_note  # noqa: E402  (Francesca's AI: voice note -> issues)
+from pipeline.landlord_email import write_email  # noqa: E402
 from pipeline.inventory import compare_inventory  # noqa: E402  (Francesca's AI: agency inventory vs videos)
 from report.make_report import make_pdf  # noqa: E402
 from ui import badges, step_bar  # noqa: E402  (app/ui.py: Edd.AI theme helpers)
@@ -405,5 +407,30 @@ else:
             type="primary",
             on_click=lambda: st.session_state.update(downloaded=True),
         )
+
+    # 5. Email your landlord: AI-written, citing the GOV.UK / Shelter source of each rule
+    st.header("5. Email your landlord")
+    st.caption("Send the report on move-in day, so there's a dated record. Attach the PDF you just downloaded.")
+    landlord_col, to_col = st.columns(2)
+    landlord_name = landlord_col.text_input("Landlord or agent's name", placeholder="e.g. Mr Patel / Foxtons")
+    landlord_email = to_col.text_input("Their email address", placeholder="e.g. lettings@agency.co.uk")
+    if st.button("Write the email for me", type="primary"):
+        try:
+            with st.spinner("Writing your email..."):
+                st.session_state.email = write_email(st.session_state.edited, tenant_name, property_address,
+                                                     landlord_name)
+        except Exception as e:  # e.g. missing API key, no internet
+            st.error(f"Sorry, the email didn't work: {e}. Please try again.")
+            st.stop()
+        st.session_state.email_version = st.session_state.get("email_version", 0) + 1
+    email = st.session_state.get("email")
+    if email:
+        ev = st.session_state.get("email_version", 0)
+        subject = st.text_input("Subject", value=email["subject"], key=f"email_subject_{ev}")
+        body = st.text_area("Email", value=email["body"], height=420, key=f"email_body_{ev}")
+        mailto = (f"mailto:{quote(landlord_email.strip())}?subject={quote(subject)}&body={quote(body)}")
+        st.link_button("Open in your email app", mailto, type="primary")
+        st.caption("Your email app opens with this text filled in. Attach the PDF report before sending. "
+                   "General guidance, not legal advice.")
 
 st.caption("General guidance, not legal advice. See GOV.UK, Shelter or Citizens Advice for help with deposits.")
