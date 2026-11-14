@@ -104,12 +104,14 @@ Also:
 
 - Fri 13 Nov – Track A, Move-in Co-pilot, Python + Streamlit, roles as above – team.
 - Sat 14 Nov – Build the move-out comparison for real (was slide only): `pipeline/moveout.py` + a Move-out tab – team.
+- Sat 14 Nov – Rebrand to **Edd.AI** + new UI (homepage, top tabs, green theme, issue cards, AI outlines the damage in photos and PDF). `app/main.py` is now only the tab setup; the move-in screen is `app/move_in.py` – Anant.
+- Sat 14 Nov – Emma's move-in/move-out vs inventory comparison moves to the roadmap (not enough time before freeze) – team.
 
 ## Current status
 
 Sat 14 Nov, 13:00:
 
-- **Done (in `main`, live at https://movein-copilot.streamlit.app):** core loop (video → issues → editable list → PDF), voice comments + "Forgot something?" voice note, AI check column (confidence + reason), rewatch the moment, responsibility with GOV.UK/Shelter sources, precise address, PDF redesign, admin checklist page, agency inventory check (pypdf), move-out comparison page, demo cache, speed-ups (keyframes + sound-only via imageio-ffmpeg: ~16 s for a 500 MB 4K video).
+- **Done (in `main`, live at https://movein-copilot.streamlit.app):** core loop (video → issues → editable list → PDF), voice comments + "Forgot something?" voice note, AI check column (confidence + reason), rewatch the moment, responsibility with GOV.UK/Shelter sources, precise address, PDF redesign, admin checklist page, agency inventory check (pypdf), move-out comparison page, demo cache, Edd.AI redesign + damage outlines (13:10), speed-ups (keyframes + sound-only via imageio-ffmpeg: ~16 s for a 500 MB 4K video).
 - **In progress:** Anant: map + saved-reports dashboard (not in `main` yet).
 - **To do before 14:30 freeze:** make the live app viewable by judges (Streamlit sharing), test the live app end to end, pre-save demo videos in `data/demo_cache/`, real move-out video test (#20), record a backup demo video, demo script.
 - **Roadmap slide:** report a repair, contract red-flag check, (map / dashboard if not ready).
