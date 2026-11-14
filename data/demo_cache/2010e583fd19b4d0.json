@@ -1,0 +1,156 @@
+[
+  {
+    "room": "kitchen",
+    "item": "Wall cabinet door bottom trim",
+    "issue": "Wood-effect trim strip along the bottom of the wall cabinet door is worn, with the finish peeling and scuffed along its length",
+    "severity": "minor",
+    "frame_time_s": 42.0,
+    "note": "",
+    "confidence": "high",
+    "uncertainty_reason": "",
+    "responsibility": "Not tenant's \u2013 cosmetic",
+    "responsibility_reason": "This was already there when you moved in. Tenants can be charged for damage they cause, such as holes or stains, so recording it now protects your deposit.",
+    "responsibility_source": "Shelter \u2013 Deposit deductions for damage and missing items",
+    "responsibility_url": "https://england.shelter.org.uk/housing_advice/tenancy_deposits/what_can_your_landlord_deduct_from_your_deposit/damage_and_missing_items",
+    "frame_path": "data/frames/kitchen_042.jpg",
+    "box": [
+      0.0,
+      0.6201171875,
+      1.0,
+      0.703125
+    ],
+    "confirmed": true
+  },
+  {
+    "room": "kitchen",
+    "item": "Wall cabinet door bottom trim (corner)",
+    "issue": "Worn and chipped finish on the corner of another cabinet door's bottom trim",
+    "severity": "minor",
+    "frame_time_s": 40.5,
+    "note": "",
+    "confidence": "medium",
+    "uncertainty_reason": "Image is slightly blurred; check the corner of the trim in person to confirm the chipping",
+    "responsibility": "Not tenant's \u2013 cosmetic",
+    "responsibility_reason": "This was already there when you moved in. Tenants can be charged for damage they cause, such as holes or stains, so recording it now protects your deposit.",
+    "responsibility_source": "Shelter \u2013 Deposit deductions for damage and missing items",
+    "responsibility_url": "https://england.shelter.org.uk/housing_advice/tenancy_deposits/what_can_your_landlord_deduct_from_your_deposit/damage_and_missing_items",
+    "frame_path": "data/frames/kitchen_040.jpg",
+    "box": [
+      0.08680555555555555,
+      0.6103515625,
+      0.4774305555555556,
+      0.72265625
+    ],
+    "confirmed": true
+  },
+  {
+    "room": "kitchen",
+    "item": "Wall cabinet underside trim / pelmet",
+    "issue": "Section of trim under the wall cabinets appears broken or missing, leaving a gap",
+    "severity": "minor",
+    "frame_time_s": 6.0,
+    "note": "",
+    "confidence": "medium",
+    "uncertainty_reason": "Could be a join between two pieces of trim; check whether a piece is actually missing",
+    "responsibility": "Not tenant's \u2013 cosmetic",
+    "responsibility_reason": "This was already there when you moved in. Tenants can be charged for damage they cause, such as holes or stains, so recording it now protects your deposit.",
+    "responsibility_source": "Shelter \u2013 Deposit deductions for damage and missing items",
+    "responsibility_url": "https://england.shelter.org.uk/housing_advice/tenancy_deposits/what_can_your_landlord_deduct_from_your_deposit/damage_and_missing_items",
+    "frame_path": "data/frames/kitchen_006.jpg",
+    "box": [
+      0.3472222222222222,
+      0.3759765625,
+      0.5208333333333334,
+      0.4345703125
+    ],
+    "confirmed": true
+  },
+  {
+    "room": "kitchen",
+    "item": "Cable under wall cabinet",
+    "issue": "Loose cable draped exposed along the underside of the wall cabinet trim, not clipped or concealed",
+    "severity": "minor",
+    "frame_time_s": 31.5,
+    "note": "",
+    "confidence": "medium",
+    "uncertainty_reason": "Check whether this is an appliance lead or fixed wiring that should be secured",
+    "responsibility": "Landlord to repair",
+    "responsibility_reason": "Landlords are always responsible for heating and hot water, gas appliances, ventilation and electrical wiring.",
+    "responsibility_source": "GOV.UK \u2013 Private renting: repairs",
+    "responsibility_url": "https://www.gov.uk/private-renting/repairs",
+    "frame_path": "data/frames/kitchen_031.jpg",
+    "box": [
+      0.10416666666666667,
+      0.390625,
+      0.6857638888888888,
+      0.4736328125
+    ],
+    "confirmed": true
+  },
+  {
+    "room": "kitchen",
+    "item": "Worktop to wall tile joint by sink",
+    "issue": "Dark gap where sealant is missing or failed between worktop and wall tiles",
+    "severity": "minor",
+    "frame_time_s": 7.5,
+    "note": "",
+    "confidence": "medium",
+    "uncertainty_reason": "Could be a shadow at the joint; check whether sealant is present",
+    "responsibility": "Landlord to repair",
+    "responsibility_reason": "Landlords are always responsible for basins, sinks, baths and toilets, and their pipes and drains.",
+    "responsibility_source": "GOV.UK \u2013 Private renting: repairs",
+    "responsibility_url": "https://www.gov.uk/private-renting/repairs",
+    "frame_path": "data/frames/kitchen_007.jpg",
+    "box": [
+      0.390625,
+      0.6787109375,
+      0.5815972222222222,
+      0.7373046875
+    ],
+    "confirmed": true
+  },
+  {
+    "room": "kitchen",
+    "item": "Washing machine door seal",
+    "issue": "Black mould or dirt build-up on the rubber door seal",
+    "severity": "minor",
+    "frame_time_s": 13.5,
+    "note": "",
+    "confidence": "medium",
+    "uncertainty_reason": "Could be shadow inside the seal; open the seal folds and check for black mould",
+    "responsibility": "Unsure \u2013 ask landlord",
+    "responsibility_reason": "This depends on your tenancy agreement. Ask your landlord in writing and keep the reply.",
+    "responsibility_source": "GOV.UK \u2013 Private renting: repairs",
+    "responsibility_url": "https://www.gov.uk/private-renting/repairs",
+    "frame_path": "data/frames/kitchen_013.jpg",
+    "box": [
+      0.0,
+      0.615234375,
+      0.15625,
+      0.751953125
+    ],
+    "confirmed": true
+  },
+  {
+    "room": "kitchen",
+    "item": "Washing machine front panel",
+    "issue": "Torn sticker and adhesive residue on the front of the washing machine",
+    "severity": "minor",
+    "frame_time_s": 12.0,
+    "note": "",
+    "confidence": "medium",
+    "uncertainty_reason": "Frame is slightly blurred; confirm it is residue rather than an intact label",
+    "responsibility": "Not tenant's \u2013 cosmetic",
+    "responsibility_reason": "This was already there when you moved in. Tenants can be charged for damage they cause, such as holes or stains, so recording it now protects your deposit.",
+    "responsibility_source": "Shelter \u2013 Deposit deductions for damage and missing items",
+    "responsibility_url": "https://england.shelter.org.uk/housing_advice/tenancy_deposits/what_can_your_landlord_deduct_from_your_deposit/damage_and_missing_items",
+    "frame_path": "data/frames/kitchen_012.jpg",
+    "box": [
+      0.7899305555555556,
+      0.5224609375,
+      0.9722222222222222,
+      0.6884765625
+    ],
+    "confirmed": true
+  }
+]
