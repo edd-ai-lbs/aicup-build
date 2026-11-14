@@ -39,6 +39,7 @@ use_session_video = room in videos and st.checkbox("Use the move-in video from t
 move_in_upload = None if use_session_video else st.file_uploader(
     "Move-in video", type=VIDEO_TYPES, key=f"move_in_{room}")
 move_out_upload = st.file_uploader("Move-out video", type=VIDEO_TYPES, key=f"move_out_{room}")
+st.caption("📱 Tip: film in 1080p, about 1 minute per room, along the same path as your move-in video.")
 
 if (use_session_video or move_in_upload) and move_out_upload and st.button("Compare", type="primary"):
     move_in_path = videos[room] if use_session_video else save_upload(move_in_upload)

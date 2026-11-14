@@ -15,13 +15,19 @@ st.set_page_config(page_title="Edd.AI", page_icon=str(HERE / "assets" / "icon.sv
 apply_theme()
 st.logo(str(HERE / "assets" / "logo.svg"), size="large")
 
-page = st.navigation(
-    [
-        st.Page("home.py", title="Home", default=True),
-        st.Page("move_in.py", title="Move-in report"),
-        st.Page("pages/move_out.py", title="Move-out check"),
-        st.Page("pages/checklist.py", title="Admin checklist"),
-    ],
-    position="top",
-)
+pages = [
+    st.Page("home.py", title="Home", default=True),
+    st.Page("move_in.py", title="Move-in report"),
+    st.Page("pages/move_out.py", title="Move-out check"),
+    st.Page("pages/checklist.py", title="Admin checklist"),
+]
+page = st.navigation(pages, position="top")
+
+# On phones the tabs above fold into a small "»" menu, so show a row of tab buttons too (hidden on computers, see ui.py).
+with st.container(key="mobile_nav"):
+    for col, p, label in zip(st.columns(4), pages, ["Home", "Move-in", "Move-out", "Checklist"]):
+        if p.url_path == page.url_path:
+            col.markdown(f'<div class="edd-tab-current">{label}</div>', unsafe_allow_html=True)
+        else:
+            col.page_link(p, label=label)
 page.run()

@@ -88,6 +88,36 @@ CSS = """
 @keyframes edd-pop { 0% { transform: scale(.96); } 45% { transform: scale(1.05); } 100% { transform: scale(1); } }
 @keyframes edd-pulse { 0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, .6); } 100% { box-shadow: 0 0 0 16px rgba(52, 211, 153, 0); } }
 
+/* Phones: tab buttons, smaller headings, thumb-sized buttons, compact cards */
+.st-key-mobile_nav { display: none; }
+@media (max-width: 640px) {
+  .st-key-mobile_nav {
+    display: block; position: sticky; top: 3.4rem; z-index: 99; background: #FFFFFF;
+    margin: -8px -16px 4px; padding: 6px 8px; border-bottom: 1px solid #E5E9E8;
+  }
+  .st-key-mobile_nav [data-testid="stHorizontalBlock"] { flex-wrap: nowrap !important; gap: 4px !important; }
+  .st-key-mobile_nav [data-testid="stColumn"] { min-width: 0 !important; width: auto !important; flex: 1 1 0 !important; }
+  .st-key-mobile_nav [data-testid="stPageLink"] a {
+    justify-content: center; padding: 6px 4px; background: #F4F7F6; font-size: .85rem; font-weight: 600;
+  }
+  .st-key-mobile_nav .edd-tab-current {
+    text-align: center; padding: 6px 4px; border-radius: 999px; background: #0B2E24; color: #FFFFFF;
+    font-size: .85rem; font-weight: 600; line-height: 1.6;
+  }
+
+  .stApp h1 { font-size: 2rem !important; line-height: 1.15; }
+  .stApp h2 { font-size: 1.55rem !important; line-height: 1.2; }
+  .stApp h3 { font-size: 1.25rem !important; }
+  .st-key-hero { padding: 32px 24px; }
+  .st-key-hero h1 { font-size: 2.3rem !important; }
+  .edd-steps { grid-template-columns: 1fr; gap: 6px; }
+  .edd-steps li { padding: 10px 12px; }
+
+  .stButton button, .stDownloadButton button { width: 100%; min-height: 48px; }
+  [class*="st-key-card_"], [class*="st-key-fresh_"] { padding: 14px; }
+  [class*="st-key-card_"] img, [class*="st-key-fresh_"] img { max-height: 170px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .stApp *, .stApp *::before, .stApp *::after { animation: none !important; transition: none !important; }
 }
@@ -97,6 +127,12 @@ CSS = """
 
 def apply_theme():
     st.markdown(CSS, unsafe_allow_html=True)
+
+
+def is_phone():
+    """True when the page is open on a phone (from the browser's user agent), to fold details away."""
+    agent = (st.context.headers.get("User-Agent") or "").lower()
+    return any(word in agent for word in ("iphone", "android", "mobile"))
 
 
 def badges(*pairs):
