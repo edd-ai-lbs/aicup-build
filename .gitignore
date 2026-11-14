@@ -1,0 +1,9 @@
+# Secret API keys - never upload
+.env
+
+# Frames the pipeline saves from videos
+data/frames/
+
+# Files Python and macOS create automatically
+__pycache__/
+.DS_Store
