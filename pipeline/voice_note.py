@@ -8,6 +8,7 @@ import json
 import anthropic
 from dotenv import load_dotenv
 
+from pipeline.vision import RULES, RULES_BY_ID
 from pipeline.voice import transcribe
 
 load_dotenv()
@@ -25,7 +26,9 @@ Turn the voice note into report entries:
   If the room is unclear, pick the closest one.
 - A comment about a problem already in the list goes in "comments" with that issue's number,
   instead of a new issue.
-- Put the tenant's own words for each point in "note". Ignore filler that is not about a problem."""
+- Put the tenant's own words for each point in "note". Ignore filler that is not about a problem.
+- For each new issue, pick the "rule_id" that best says who deals with it under English renting rules:
+{rules}"""
 
 SCHEMA = {
     "type": "object",
@@ -40,8 +43,9 @@ SCHEMA = {
                     "issue": {"type": "string"},
                     "severity": {"type": "string", "enum": ["minor", "moderate", "major"]},
                     "note": {"type": "string"},
+                    "rule_id": {"type": "string", "enum": list(RULES_BY_ID)},
                 },
-                "required": ["room", "item", "issue", "severity", "note"],
+                "required": ["room", "item", "issue", "severity", "note", "rule_id"],
                 "additionalProperties": False,
             },
         },
@@ -75,7 +79,8 @@ def add_voice_note(audio_path, issues, rooms):
         f"{n}: {_text(i.get('room'))} | {_text(i.get('item'))} | {_text(i.get('issue'))} | {_text(i.get('note'))}"
         for n, i in enumerate(issues)
     ) or "(none yet)"
-    prompt = PROMPT.format(note=said, issues=listing, rooms=", ".join(rooms))
+    prompt = PROMPT.format(note=said, issues=listing, rooms=", ".join(rooms),
+                           rules="\n".join(f'  - "{r["id"]}": {r["covers"]}' for r in RULES))
 
     response = anthropic.Anthropic().beta.messages.create(
         model="claude-opus-5-5",
@@ -96,5 +101,8 @@ def add_voice_note(audio_path, issues, rooms):
             updated[c["number"]]["note"] = (old + " " + c["note"]).strip()
     for new in result["new_issues"]:
         new.update(frame_time_s=None, frame_path="", confirmed=True)  # no video moment for these
+        rule = RULES_BY_ID[new.pop("rule_id")]  # same sourced answer as video issues
+        new.update(responsibility=rule["who"], responsibility_reason=rule["explanation"],
+                   responsibility_source=rule["source"]["label"], responsibility_url=rule["source"]["url"])
         updated.append(new)
     return updated, said
