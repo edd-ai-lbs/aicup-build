@@ -106,11 +106,11 @@ CSS = """
 .st-key-mobile_nav { display: none; }
 @media (max-width: 640px) {
   /* Room at the bottom so the tab bar never covers the last button */
-  [data-testid="stMainBlockContainer"] { padding-top: 3.6rem !important; padding-bottom: 96px !important; }
-  /* Tab bar fixed to the bottom of the screen (thumb reach), above the iPhone home bar */
+  [data-testid="stMainBlockContainer"] { padding-top: 3.6rem !important; padding-bottom: 160px !important; }
+  /* Tab bar near the bottom (thumb reach), lifted 56px so Streamlit Cloud's own "Hosted with Streamlit" badge doesn't cover it */
   .st-key-mobile_nav {
-    display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000; margin: 0;
-    padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); background: #FFFFFF;
+    display: block; position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom)); z-index: 1000; margin: 0;
+    padding: 8px; background: #FFFFFF; border-bottom: 1px solid #E5E9E8;
     border-top: 1px solid #E5E9E8; box-shadow: 0 -4px 16px rgba(11, 46, 36, .06);
   }
   /* Four identical tabs, styled like the laptop tabs: plain text, current one on a soft grey background */
