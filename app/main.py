@@ -2,6 +2,7 @@
     python3 -m streamlit run app/main.py
 """
 
+import re
 import sys
 import tempfile
 from pathlib import Path
@@ -79,7 +80,15 @@ if "issues" not in st.session_state:
 # 1. Your details
 st.header("1. Your details")
 tenant_name = st.text_input("Your name")
-property_address = st.text_input("Property address")
+col_flat, col_street = st.columns([1, 3])
+flat = col_flat.text_input("Flat number", key="flat", placeholder="e.g. Flat 4B")
+street = col_street.text_input("Street address", key="street", placeholder="e.g. 12 Regent's Park Road")
+col_city, col_postcode = st.columns([3, 1])
+city = col_city.text_input("Town or city", key="city", value="London")
+postcode = col_postcode.text_input("Postcode", key="postcode", placeholder="e.g. NW1 4SA").strip().upper()
+if postcode and not re.fullmatch(r"[A-Z]{1,2}[0-9][A-Z0-9]? ?[0-9][A-Z]{2}", postcode):
+    st.warning("That doesn't look like a UK postcode. Please check it (e.g. NW1 4SA).")
+property_address = ", ".join(part.strip() for part in [flat, street, city, postcode] if part.strip())
 
 # 2. Upload a room video – repeat for every room; each one adds to the list below
 st.header("2. Film a room")

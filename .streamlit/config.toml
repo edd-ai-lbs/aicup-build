@@ -1,3 +1,11 @@
 [server]
 # Phone videos are often over Streamlit's default 200 MB limit. Value is in MB.
 maxUploadSize = 1024
+
+[theme]
+# Calm, professional look: navy accents to match the PDF report.
+base = "light"
+primaryColor = "#1F3A60"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F2F5F9"
+textColor = "#1A1A1A"
