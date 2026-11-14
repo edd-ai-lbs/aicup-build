@@ -5,12 +5,13 @@ import json
 
 import anthropic
 from dotenv import load_dotenv
+from pypdf import PdfReader
 
 load_dotenv()
 
 STATUSES = ["missing_from_inventory", "inventory_only", "not_filmed", "agrees"]
 
-PROMPT = """The attached PDF is the check-in inventory a UK letting agency sent to a tenant.
+PROMPT = """Above is the check-in inventory a UK letting agency sent to a tenant.
 The tenant filmed the flat, and an AI found these issues (number: room | item | issue | severity):
 {issues}
 
@@ -64,8 +65,15 @@ def _text(value):
 def compare_inventory(pdf_path, issues, rooms_filmed):
     """Returns {"findings": [...], "reply": "..."}; findings sorted most important first.
     Each finding linked to a video issue also gets that issue's frame_time_s and frame_path."""
-    with open(pdf_path, "rb") as f:
-        pdf = base64.standard_b64encode(f.read()).decode("utf-8")
+    # Send only the inventory's text: about 6x fewer tokens than the whole PDF with its photos.
+    # Scanned PDFs have no text, so for those we still send the whole file.
+    text = "\n".join((page.extract_text() or "") for page in PdfReader(pdf_path).pages).strip()
+    if len(text) > 1000:
+        inventory = {"type": "text", "text": f"<inventory>\n{text}\n</inventory>"}
+    else:
+        with open(pdf_path, "rb") as f:
+            pdf = base64.standard_b64encode(f.read()).decode("utf-8")
+        inventory = {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": pdf}}
     listing = "\n".join(
         f"{n}: {_text(i.get('room'))} | {_text(i.get('item'))} | {_text(i.get('issue'))} | {_text(i.get('severity'))}"
         for n, i in enumerate(issues)
@@ -78,10 +86,7 @@ def compare_inventory(pdf_path, issues, rooms_filmed):
         output_config={"effort": "medium", "format": {"type": "json_schema", "schema": SCHEMA}},
         betas=["server-side-fallback-2026-07-01"],
         fallbacks="default",
-        messages=[{"role": "user", "content": [
-            {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": pdf}},
-            {"type": "text", "text": prompt},
-        ]}],
+        messages=[{"role": "user", "content": [inventory, {"type": "text", "text": prompt}]}],
     )
     if response.stop_reason == "refusal":
         raise RuntimeError("Claude declined to compare this inventory.")
