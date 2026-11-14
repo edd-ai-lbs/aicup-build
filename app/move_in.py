@@ -360,7 +360,9 @@ else:
                 text_col.markdown(f"Inventory says: _{text_or_blank(finding.get('inventory_says')) or 'nothing'}_  \n"
                                   f"Your video shows: _{text_or_blank(finding.get('video_shows')) or 'nothing'}_")
                 if photo_col:
-                    photo_col.image(photo, width=160)
+                    match = next((i for i in st.session_state.edited  # the issue this photo came from
+                                  if text_or_blank(i.get("frame_path")) == photo), {})
+                    photo_col.image(outlined(photo, box_of(match)), width=160)
                 # Rewatch: find the video via the matching issue's photo (room names can differ slightly)
                 seconds = finding.get("frame_time_s")
                 room = next((i["room"] for i in st.session_state.edited
