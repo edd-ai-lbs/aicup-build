@@ -92,7 +92,7 @@ def find_issues(frames, sentences=None):
         nearest = min(frames, key=lambda f: abs(f["frame_time_s"] - issue["frame_time_s"]))
         issue["frame_time_s"] = nearest["frame_time_s"]
         issue["frame_path"] = nearest["frame_path"]
-        issue["confirmed"] = False  # the user confirms each issue in the app
+        issue["confirmed"] = True  # ticked by default; the user unticks wrong ones in the app
     return issues
 
 
