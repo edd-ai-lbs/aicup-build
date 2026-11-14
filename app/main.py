@@ -13,6 +13,7 @@ import streamlit as st
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.append(str(ROOT))  # so we can import from the report/ and pipeline/ folders
 from pipeline.analyse import analyse_room  # noqa: E402  (Francesca's AI: video -> issues)
+from pipeline.voice_note import add_voice_note  # noqa: E402  (Francesca's AI: voice note -> issues)
 from report.make_report import make_pdf  # noqa: E402
 
 ROOMS = ["Kitchen", "Living room", "Bedroom 1", "Bedroom 2", "Bathroom", "Hallway"]
@@ -141,6 +142,32 @@ else:
         },
     )
     st.session_state.edited = edited.to_dict("records")
+
+    # Forgot something? Add it with a voice note
+    st.subheader("Forgot something?")
+    st.caption("Record a short voice note, e.g. \"In the bathroom the hot tap drips\". "
+               "New problems are added to the list; comments on ones already there go in their note.")
+    voice = st.audio_input("Record a voice note", key=f"voice_{st.session_state.version}")
+    if voice and st.button("Add to report"):
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+            f.write(voice.getbuffer())
+        try:
+            with st.spinner("Listening to your note..."):
+                current = st.session_state.edited
+                updated, said = add_voice_note(f.name, current, st.session_state.rooms)
+        except Exception as e:  # e.g. missing API key, no internet
+            st.error(f"Sorry, the voice note didn't work: {e}. Please try again.")
+            st.stop()
+        for issue in updated[len(current):]:  # only the new rows
+            issue["responsibility"] = guess_responsibility(issue)
+            for field in ["item", "issue", "severity"]:
+                issue[field] = cap(issue.get(field, ""))
+        st.session_state.issues = updated
+        st.session_state.last_note = said
+        st.session_state.version += 1
+        st.rerun()
+    if st.session_state.get("last_note"):
+        st.success(f"Added from your note: \"{st.session_state.last_note}\"")
 
     with st.expander("Who sorts what? (for your information – not included in the report)"):
         st.markdown(
