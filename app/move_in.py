@@ -134,7 +134,7 @@ room = st.selectbox(
 room = cap(room or "")
 video = st.file_uploader("Upload the video", type=["mp4", "mov", "m4v"], key=f"upload_{st.session_state.version}")
 if video and room:
-    st.video(video)
+    st.video(video, width=360)
     if st.button(f"Find issues in: {room}", type="primary"):
         with tempfile.NamedTemporaryFile(suffix=Path(video.name).suffix, delete=False) as f:
             f.write(video.getbuffer())
@@ -210,10 +210,10 @@ else:
                 keep = issue.get("confirmed") == True  # noqa: E712
                 prefix = ("fresh_" if fresh else "card_") + ("" if keep else "off_")
                 with st.container(key=f"{prefix}{k}"):
-                    photo_col, body = st.columns([1, 3], gap="medium")
+                    photo_col, body = st.columns([1, 4], gap="medium")
                     photo = text_or_blank(issue.get("frame_path"))
                     if photo and Path(photo).exists():
-                        photo_col.image(photo)
+                        photo_col.image(photo, width=200)
                     else:
                         photo_col.markdown('<div class="edd-photo-missing">No photo – added by you</div>',
                                            unsafe_allow_html=True)
