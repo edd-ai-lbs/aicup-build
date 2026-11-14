@@ -1,0 +1,170 @@
+{
+  "checked_on": "2026-11-14",
+  "applies_to": "Private renting in England (rules differ in Scotland, Wales and Northern Ireland)",
+  "disclaimer": "General guidance, not legal advice. Rules change, so follow the GOV.UK links. For help with a problem, contact Shelter or Citizens Advice.",
+  "help_links": [
+    {"label": "Shelter – housing advice", "url": "https://england.shelter.org.uk/housing_advice"},
+    {"label": "Citizens Advice – renting privately", "url": "https://www.citizensadvice.org.uk/housing/renting-privately/"}
+  ],
+  "questions": [
+    {"id": "all_students", "question": "Is everyone living in the flat a full-time student?", "help": "Full-time usually means a course of at least 1 year and at least 21 hours of study a week."},
+    {"id": "bills_included", "question": "Are energy bills (gas and electricity) included in your rent?"},
+    {"id": "live_tv", "question": "Will you watch live TV on any channel, or use BBC iPlayer?", "help": "Netflix, YouTube and other on-demand streaming don't count."},
+    {"id": "international", "question": "Are you in the UK on a visa (for example a Student visa)?"}
+  ],
+  "items": [
+    {
+      "id": "deposit",
+      "title": "Check your deposit is protected",
+      "when": "Within 30 days of paying it",
+      "why": "Your landlord must put your deposit in a government-approved scheme within 30 days, and give you the scheme details within 30 days. Protected deposits are much easier to get back.",
+      "steps": [
+        "Ask your landlord or agent which scheme they used, or wait for the scheme details (they must arrive within 30 days).",
+        "Check it yourself with the scheme: Deposit Protection Service, MyDeposits or Tenancy Deposit Scheme.",
+        "Keep your move-in report from this app with your deposit paperwork. It's your evidence of the flat's condition."
+      ],
+      "links": [
+        {"label": "GOV.UK – Tenancy deposit protection", "url": "https://www.gov.uk/tenancy-deposit-protection"},
+        {"label": "GOV.UK – Information landlords must give you", "url": "https://www.gov.uk/tenancy-deposit-protection/information-landlords-must-give-tenants"},
+        {"label": "GOV.UK – If your landlord doesn't protect your deposit", "url": "https://www.gov.uk/tenancy-deposit-protection/if-your-landlord-doesnt-protect-your-deposit"}
+      ],
+      "show_if": null
+    },
+    {
+      "id": "landlord_documents",
+      "title": "Get your safety documents and written terms",
+      "when": "Before or on move-in day",
+      "why": "Your landlord must give you a copy of the gas safety record before you move in, and you have the right to see the Energy Performance Certificate (EPC). For tenancies starting on or after 1 May 2026, the landlord must give you the key terms in writing.",
+      "steps": [
+        "Ask for the gas safety record (if the flat has gas).",
+        "Ask to see the EPC.",
+        "Check there is a working smoke alarm on each floor.",
+        "Keep your written tenancy terms somewhere safe."
+      ],
+      "links": [
+        {"label": "GOV.UK – Your landlord's safety responsibilities", "url": "https://www.gov.uk/private-renting/your-landlords-safety-responsibilities"},
+        {"label": "GOV.UK – Energy Performance Certificates", "url": "https://www.gov.uk/buy-sell-your-home/energy-performance-certificates"}
+      ],
+      "show_if": null
+    },
+    {
+      "id": "renters_rights",
+      "title": "Know your new renting rights (from May 2026)",
+      "when": "Before you sign or pay",
+      "why": "Since 1 May 2026, new private tenancies in England roll on with no fixed end date, and some landlord practices are banned.",
+      "steps": [
+        "After signing, your landlord can ask for at most 1 month's rent in advance.",
+        "You can end the tenancy by giving 2 months' notice in writing.",
+        "Rent can go up at most once a year, not in the first 12 months, with at least 2 months' notice."
+      ],
+      "links": [
+        {"label": "GOV.UK – Renters' Rights Act overview for tenants", "url": "https://www.gov.uk/guidance/renters-rights-act-overview-for-tenants"}
+      ],
+      "show_if": null
+    },
+    {
+      "id": "right_to_rent",
+      "title": "Prove your right to rent",
+      "when": "Before your tenancy starts",
+      "why": "Landlords in England must check that every adult tenant has the right to rent. If you have an eVisa, you prove it with a share code. Halls of residence are exempt.",
+      "steps": [
+        "Get a right to rent share code from your UKVI account.",
+        "Send the share code and your date of birth to your landlord or agent."
+      ],
+      "links": [
+        {"label": "GOV.UK – Prove your right to rent", "url": "https://www.gov.uk/prove-right-to-rent"},
+        {"label": "GOV.UK – Document checks when renting", "url": "https://www.gov.uk/private-renting/document-checks"}
+      ],
+      "show_if": {"international": true}
+    },
+    {
+      "id": "council_tax_students",
+      "title": "Claim your council tax student exemption",
+      "when": "As soon as you get a council tax bill",
+      "why": "If everyone in the household is a full-time student, you don't have to pay council tax, but you usually have to tell the council.",
+      "steps": [
+        "Ask your university for a council tax exemption certificate (proof you're a full-time student).",
+        "Find your local council with your postcode and apply for the exemption."
+      ],
+      "links": [
+        {"label": "GOV.UK – Council tax: full-time students", "url": "https://www.gov.uk/council-tax/discounts-for-full-time-students"},
+        {"label": "GOV.UK – Apply for a council tax discount", "url": "https://www.gov.uk/apply-for-council-tax-discount"}
+      ],
+      "show_if": {"all_students": true}
+    },
+    {
+      "id": "council_tax",
+      "title": "Set up council tax",
+      "when": "In your first week",
+      "why": "Not everyone in your household is a full-time student, so a council tax bill will be issued. You may still get a discount.",
+      "steps": [
+        "Find your local council with your postcode and tell them you've moved in.",
+        "Check which discounts you can claim (students in the household may still reduce the bill)."
+      ],
+      "links": [
+        {"label": "GOV.UK – Council tax: full-time students", "url": "https://www.gov.uk/council-tax/discounts-for-full-time-students"},
+        {"label": "GOV.UK – Apply for a council tax discount", "url": "https://www.gov.uk/apply-for-council-tax-discount"}
+      ],
+      "show_if": {"all_students": false}
+    },
+    {
+      "id": "energy",
+      "title": "Set up gas and electricity",
+      "when": "On move-in day",
+      "why": "You pay from the day you move in, so start with an accurate meter reading and don't pay for the last tenant's energy.",
+      "steps": [
+        "Take a dated photo of each meter reading on move-in day.",
+        "Find your gas supplier with your postcode on Find My Supplier.",
+        "For electricity, find your network operator first, then search their site for your supplier.",
+        "Contact the supplier, tell them you've moved in, and give them your readings."
+      ],
+      "links": [
+        {"label": "Find My Supplier (gas)", "url": "https://www.findmysupplier.energy/"},
+        {"label": "Energy Networks Association – find your network operator (electricity)", "url": "https://www.energynetworks.org/customers/find-my-network-operator"},
+        {"label": "Citizens Advice – find your energy supplier", "url": "https://www.citizensadvice.org.uk/consumer/energy/energy-supply/moving-home-your-energy-supply/find-out-who-your-gas-or-electricity-supplier-is/"}
+      ],
+      "show_if": {"bills_included": false}
+    },
+    {
+      "id": "tv_licence",
+      "title": "Buy a TV licence",
+      "when": "Before you watch live TV or BBC iPlayer",
+      "why": "You need a TV licence (£180 a year) to watch or record live TV on any channel or service, or to use BBC iPlayer. In shared houses, check whether each room needs its own.",
+      "steps": [
+        "Buy it online from TV Licensing (linked from GOV.UK)."
+      ],
+      "links": [
+        {"label": "GOV.UK – TV licence", "url": "https://www.gov.uk/tv-licence"}
+      ],
+      "show_if": {"live_tv": true}
+    },
+    {
+      "id": "gp",
+      "title": "Register with a GP (doctor)",
+      "when": "In your first few weeks, before you get ill",
+      "why": "Registering is free. You don't need proof of address, ID or immigration status.",
+      "steps": [
+        "Search for GP surgeries near your new address on the NHS website.",
+        "Register online (about 15 minutes) or ask the surgery for a form."
+      ],
+      "links": [
+        {"label": "NHS – Find a GP", "url": "https://www.nhs.uk/service-search/find-a-gp"},
+        {"label": "NHS – How to register with a GP surgery", "url": "https://www.nhs.uk/nhs-services/gps/how-to-register-with-a-gp-surgery/"}
+      ],
+      "show_if": null
+    },
+    {
+      "id": "vote",
+      "title": "Register to vote (if you're eligible)",
+      "when": "Any time after you move",
+      "why": "British, Irish and qualifying Commonwealth citizens can register in England, plus some EU citizens. Check the eligibility rules on GOV.UK.",
+      "steps": [
+        "Check if you're eligible, then register online with your new address."
+      ],
+      "links": [
+        {"label": "GOV.UK – Register to vote", "url": "https://www.gov.uk/register-to-vote"}
+      ],
+      "show_if": null
+    }
+  ]
+}
