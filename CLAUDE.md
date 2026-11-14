@@ -107,4 +107,9 @@ Also:
 
 ## Current status
 
-- *(update at each check-in: done / in progress / blocked)*
+Sat 14 Nov, 13:00:
+
+- **Done (in `main`, live at https://movein-copilot.streamlit.app):** core loop (video → issues → editable list → PDF), voice comments + "Forgot something?" voice note, AI check column (confidence + reason), rewatch the moment, responsibility with GOV.UK/Shelter sources, precise address, PDF redesign, admin checklist page, agency inventory check (pypdf), move-out comparison page, demo cache, speed-ups (keyframes + sound-only via imageio-ffmpeg: ~16 s for a 500 MB 4K video).
+- **In progress:** Anant: map + saved-reports dashboard (not in `main` yet).
+- **To do before 14:30 freeze:** make the live app viewable by judges (Streamlit sharing), test the live app end to end, pre-save demo videos in `data/demo_cache/`, real move-out video test (#20), record a backup demo video, demo script.
+- **Roadmap slide:** report a repair, contract red-flag check, (map / dashboard if not ready).
