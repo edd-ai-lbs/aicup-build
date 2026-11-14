@@ -7,7 +7,7 @@ with st.container(key="hero"):
     st.markdown("# Protect your deposit from day one.")
     st.markdown("Film each room, let AI spot the damage, and get a dated report for your landlord in minutes.")
     if st.button("Start my move-in report  →", key="start"):
-        st.switch_page("report.py")
+        st.switch_page("move_in.py")
 
 st.write("")
 st.markdown("## How it works")

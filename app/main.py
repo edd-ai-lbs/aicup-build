@@ -1,6 +1,6 @@
 """Edd.AI – app entry point: theme, logo and the tabs across the top. Run from the project folder with:
     python3 -m streamlit run app/main.py
-Each tab is its own file: home.py, report.py (move-in report), pages/move_out.py, pages/checklist.py.
+Each tab is its own file: home.py, move_in.py (move-in report), pages/move_out.py, pages/checklist.py.
 """
 
 from pathlib import Path
@@ -18,7 +18,7 @@ st.logo(str(HERE / "assets" / "logo.svg"), size="large")
 page = st.navigation(
     [
         st.Page("home.py", title="Home", default=True),
-        st.Page("report.py", title="Move-in report"),
+        st.Page("move_in.py", title="Move-in report"),
         st.Page("pages/move_out.py", title="Move-out check"),
         st.Page("pages/checklist.py", title="Admin checklist"),
     ],
