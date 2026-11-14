@@ -68,6 +68,8 @@ def add_frames(issues):
 
 
 st.set_page_config(page_title="Move-in Co-pilot", page_icon="🏠", layout="wide")
+st.sidebar.page_link("main.py", label="Move-in report", icon="🏠")
+st.sidebar.page_link("pages/checklist.py", label="Admin checklist", icon="✅")
 st.title("Move-in Co-pilot")
 st.write("Film each room, check what the AI found, and download a dated report for your landlord.")
 

@@ -2,6 +2,10 @@
 # Phone videos are often over Streamlit's default 200 MB limit. Value is in MB.
 maxUploadSize = 1024
 
+[client]
+# We add our own menu links with nicer names (see the top of app/main.py and app/pages/checklist.py).
+showSidebarNavigation = false
+
 [theme]
 # Calm, professional look: navy accents to match the PDF report.
 base = "light"
