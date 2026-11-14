@@ -3,11 +3,16 @@
 import base64
 import json
 import sys
+from pathlib import Path
 
 import anthropic
 from dotenv import load_dotenv
 
 load_dotenv()  # reads ANTHROPIC_API_KEY from .env
+
+# Who is responsible for what, with the GOV.UK / Shelter source for each rule (Francesca's content file).
+RULES = json.loads((Path(__file__).parent.parent / "content" / "responsibility.json").read_text())["rules"]
+RULES_BY_ID = {r["id"]: r for r in RULES}
 
 PROMPT = """You are helping a tenant in the UK record the condition of a rented flat at move-in,
 as evidence for getting their deposit back. The pictures above are frames from one walk-through
@@ -31,7 +36,14 @@ Be accurate: a false alarm in a legal record is as unhelpful as a missed problem
 - For each issue, rate your confidence: "high" if it would be obvious to anyone looking at the
   picture, "medium" if it is visible but small, "low" if it might be lighting, blur or a normal feature.
 - If several frames show the same spot and it only looks wrong in one, it is probably not damage.
-- "note" is only for the tenant's own spoken words (see below if any). Do not write your own description there."""
+- For "medium" issues, give a short "uncertainty_reason" telling the tenant what to double-check
+  (e.g. "could be a reflection on the glaze"). Use "" for "high" issues.
+- "note" is only for the tenant's own spoken words (see below if any). Do not write your own description there.
+
+For each issue, pick the "rule_id" that best says who deals with it under English renting rules:
+{rules}
+Remember this is a move-in record: existing cosmetic marks are not the tenant's, while things that
+need fixing (broken, leaking, rusted heating, mould) usually fall to the landlord."""
 
 VOICE_PROMPT = """
 
@@ -61,8 +73,11 @@ SCHEMA = {
                     "frame_time_s": {"type": "number"},
                     "note": {"type": "string"},
                     "confidence": {"type": "string", "enum": ["high", "medium", "low"]},
+                    "uncertainty_reason": {"type": "string"},
+                    "rule_id": {"type": "string", "enum": list(RULES_BY_ID)},
                 },
-                "required": ["room", "item", "issue", "severity", "frame_time_s", "note", "confidence"],
+                "required": ["room", "item", "issue", "severity", "frame_time_s", "note",
+                             "confidence", "uncertainty_reason", "rule_id"],
                 "additionalProperties": False,
             },
         }
@@ -81,7 +96,7 @@ def find_issues(frames, sentences=None):
             data = base64.standard_b64encode(img.read()).decode("utf-8")
         content.append({"type": "text", "text": f"Frame at {f['frame_time_s']} s:"})
         content.append({"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": data}})
-    prompt = PROMPT
+    prompt = PROMPT.format(rules="\n".join(f'- "{r["id"]}": {r["covers"]}' for r in RULES))
     if sentences:
         transcript = "\n".join(f"{s['start_s']} s: {s['text']}" for s in sentences)
         prompt += VOICE_PROMPT.format(transcript=transcript)
@@ -100,10 +115,15 @@ def find_issues(frames, sentences=None):
 
     text = next(b.text for b in response.content if b.type == "text")
     # Drop the ones Claude itself isn't sure about (likely lighting, blur or normal features).
-    issues = [i for i in json.loads(text)["issues"] if i.pop("confidence") != "low"]
+    issues = [i for i in json.loads(text)["issues"] if i["confidence"] != "low"]
 
     # Fill in the rest of the shared format.
     for issue in issues:
+        rule = RULES_BY_ID[issue.pop("rule_id")]
+        issue["responsibility"] = rule["who"]  # same options as the app's "Who sorts it?" column
+        issue["responsibility_reason"] = rule["explanation"]
+        issue["responsibility_source"] = rule["source"]["label"]
+        issue["responsibility_url"] = rule["source"]["url"]
         if not sentences:
             issue["note"] = ""  # nothing was said, so there is no tenant comment
         nearest = min(frames, key=lambda f: abs(f["frame_time_s"] - issue["frame_time_s"]))

@@ -40,6 +40,8 @@ Every module passes issues in this shape. Don't change it without telling the te
 
 The report adds `property_address`, `tenant_name` and `created_at` (ISO timestamp).
 
+Added Sat 14 Nov (pipeline fills them): `confidence` ("high" | "medium"), `uncertainty_reason` (what to double-check, "" when high), `responsibility` (same options as the app's "Who sorts it?" column), `responsibility_reason`, `responsibility_source`, `responsibility_url` (from `content/responsibility.json`).
+
 ## Tech stack
 
 - **Language / framework:** Python + Streamlit.
