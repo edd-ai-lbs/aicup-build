@@ -80,6 +80,35 @@ def grab_frame(video_path, seconds):
     return str(path)
 
 
+@st.cache_data
+def outlined(photo, box):
+    """Copy of the photo with the problem outlined in Edd.AI green; the photo itself if there's no box."""
+    image = cv2.imread(photo)
+    if image is None or not box:
+        return photo
+    h, w = image.shape[:2]
+    pad = 0.02  # a little room around the damage
+    x0, y0 = int(max(0, box[0] - pad) * w), int(max(0, box[1] - pad) * h)
+    x1, y1 = int(min(1, box[2] + pad) * w), int(min(1, box[3] + pad) * h)
+    thick = max(3, w // 160)
+    cv2.rectangle(image, (x0, y0), (x1, y1), (153, 211, 52), thick + 4)  # mint halo (BGR)
+    cv2.rectangle(image, (x0, y0), (x1, y1), (87, 120, 4), thick)        # emerald line
+    FRAMES_DIR.mkdir(exist_ok=True)
+    out = FRAMES_DIR / f"{Path(photo).stem}_box_{abs(hash(tuple(box)))}.jpg"
+    cv2.imwrite(str(out), image)
+    return str(out)
+
+
+def box_of(issue):
+    """The issue's box as a tuple of 4 numbers, or None (missing, empty or broken by the table)."""
+    box = issue.get("box")
+    try:
+        box = tuple(float(v) for v in box)
+    except (TypeError, ValueError):
+        return None
+    return box if len(box) == 4 and box[2] > box[0] and box[3] > box[1] else None
+
+
 def add_frames(issues):
     """Give each issue a photo from its room's video, unless it already has one."""
     for issue in issues:
@@ -213,7 +242,7 @@ else:
                     photo_col, body = st.columns([1, 4], gap="medium")
                     photo = text_or_blank(issue.get("frame_path"))
                     if photo and Path(photo).exists():
-                        photo_col.image(photo, width=200)
+                        photo_col.image(outlined(photo, box_of(issue)), width=200)
                     else:
                         photo_col.markdown('<div class="edd-photo-missing">No photo – added by you</div>',
                                            unsafe_allow_html=True)

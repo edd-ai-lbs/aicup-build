@@ -63,7 +63,7 @@ CSS = """
 [class*="st-key-fresh_"]:nth-child(4) { animation-delay: .21s; }
 [class*="st-key-fresh_"]:nth-child(n+5) { animation-delay: .28s; }
 [class*="st-key-card_off_"], [class*="st-key-fresh_off_"] { background: #F8FAF9; opacity: .7; }
-[class*="st-key-card_"] img, [class*="st-key-fresh_"] img { max-height: 200px; object-fit: cover; border-radius: 10px; }
+[class*="st-key-card_"] img, [class*="st-key-fresh_"] img { max-height: 220px; width: auto !important; max-width: 100%; object-fit: contain; border-radius: 10px; }
 [class*="st-key-card_"] h4, [class*="st-key-fresh_"] h4 { font-size: 1.1rem; line-height: 1.35; padding: 0; }
 .edd-photo-missing {
   height: 120px; border-radius: 10px; background: #E8EDEB; color: #4B5563; font-size: .85rem;
