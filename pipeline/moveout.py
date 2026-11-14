@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import anthropic
+import cv2
 from dotenv import load_dotenv
 
 from pipeline.analyse import CACHE_DIR, _fingerprint  # same demo fallback as the move-in report
@@ -43,6 +44,13 @@ Be accurate: a false alarm here could cost the tenant money or trust.
 {rules}
 Then write "summary": 2-3 plain sentences for the tenant about where they stand for this room."""
 
+BOX = {
+    "type": "object",
+    "properties": {"x0": {"type": "number"}, "y0": {"type": "number"}, "x1": {"type": "number"}, "y1": {"type": "number"}},
+    "required": ["x0", "y0", "x1", "y1"],
+    "additionalProperties": False,
+}
+
 SCHEMA = {
     "type": "object",
     "properties": {
@@ -57,12 +65,13 @@ SCHEMA = {
                     "severity": {"type": "string", "enum": ["minor", "moderate", "major"]},
                     "before_time_s": {"type": "number"},
                     "after_time_s": {"type": "number"},
+                    "before_box": BOX, "after_box": BOX,  # where it is in each frame, in pixels
                     "confidence": {"type": "string", "enum": ["high", "medium", "low"]},
                     "uncertainty_reason": {"type": "string"},
                     "fix_before_leaving": {"type": "boolean"},
                     "rule_id": {"type": "string", "enum": list(RULES_BY_ID)},
                 },
-                "required": ["status", "item", "description", "severity", "before_time_s", "after_time_s",
+                "required": ["status", "item", "description", "severity", "before_time_s", "after_time_s", "before_box", "after_box",
                              "confidence", "uncertainty_reason", "fix_before_leaving", "rule_id"],
                 "additionalProperties": False,
             },
@@ -79,7 +88,8 @@ def _images(label, frames):
     for f in frames:
         with open(f["frame_path"], "rb") as img:
             data = base64.standard_b64encode(img.read()).decode("utf-8")
-        content.append({"type": "text", "text": f"{label} frame at {f['frame_time_s']} s:"})
+        h, w = cv2.imread(f["frame_path"]).shape[:2]
+        content.append({"type": "text", "text": f"{label} frame at {f['frame_time_s']} s ({w}x{h} px):"})
         content.append({"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": data}})
     return content
 
@@ -101,6 +111,9 @@ def compare_frames(room, before_frames, after_frames, before_issues=None, after_
         voice = "\nWhile filming the move-out, the tenant said: " + " ".join(s["text"] for s in after_sentences) + "\n"
     prompt = PROMPT.format(room=room, issues=issues, voice=voice,
                            rules="\n".join(f'  - "{r["id"]}": {r["covers"]}' for r in RULES))
+    prompt += ('\n\n"before_box" and "after_box": a snug rectangle around the spot in the move-in and the move-out '
+               "frame you picked, in that frame's pixels (x0, y0 top-left; x1, y1 bottom-right). "
+               "Use 0, 0, 0, 0 when the spot isn't visible in that video.")
 
     response = anthropic.Anthropic().beta.messages.create(
         model="claude-opus-5-5",
@@ -121,6 +134,14 @@ def compare_frames(room, before_frames, after_frames, before_issues=None, after_
         f["room"] = room
         f["before_time_s"], f["before_path"] = (before["frame_time_s"], before["frame_path"]) if before else (None, "")
         f["after_time_s"], f["after_path"] = (after["frame_time_s"], after["frame_path"]) if after else (None, "")
+        for side, frame in (("before", before), ("after", after)):  # box as 0-1 fractions, or None
+            b = f.pop(f"{side}_box")
+            f[f"{side}_box"] = None
+            if frame:
+                h, w = cv2.imread(frame["frame_path"]).shape[:2]
+                box = [max(0.0, min(1.0, v)) for v in (b["x0"] / w, b["y0"] / h, b["x1"] / w, b["y1"] / h)]
+                if box[2] - box[0] > 0.01 and box[3] - box[1] > 0.01:
+                    f[f"{side}_box"] = box
         rule = RULES_BY_ID[f.pop("rule_id")]
         f.update(responsibility=rule["who"], responsibility_reason=rule["explanation"],
                  responsibility_source=rule["source"]["label"], responsibility_url=rule["source"]["url"])

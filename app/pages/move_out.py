@@ -9,6 +9,8 @@ import streamlit as st
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))  # project folder, so we can import pipeline/
 from pipeline.moveout import compare_room_videos  # noqa: E402
+from report.moveout_report import make_moveout_pdf  # noqa: E402
+from ui import box_of, outlined  # noqa: E402  (app/ui.py: draws the AI's box on a photo)
 
 DEFAULT_ROOMS = ["Kitchen", "Living room", "Bedroom 1", "Bedroom 2", "Bathroom", "Hallway"]  # same as the move-in page
 VIDEO_TYPES = ["mp4", "mov", "m4v"]
@@ -82,15 +84,28 @@ if result:
                 st.write(f["description"])
                 before_col, after_col = st.columns(2)
                 if f.get("before_path"):
-                    before_col.image(f["before_path"], width=220, caption=f"Move-in {video_time(f['before_time_s'])}")
+                    before_col.image(outlined(f["before_path"], box_of({"box": f.get("before_box")})), width=220, caption=f"Move-in {video_time(f['before_time_s'])}")
                 if f.get("after_path"):
-                    after_col.image(f["after_path"], width=220, caption=f"Move-out {video_time(f['after_time_s'])}")
+                    after_col.image(outlined(f["after_path"], box_of({"box": f.get("after_box")})), width=220, caption=f"Move-out {video_time(f['after_time_s'])}")
                 ai_check = "🟢 Sure" if f.get("confidence") == "high" else f"🟠 Check: {f.get('uncertainty_reason') or 'have a look yourself'}"
                 st.markdown(
                     f"**AI check:** {ai_check}  \n"
                     f"**Who sorts it?** {f['responsibility']} – {f['responsibility_reason']} "
                     f"[{f['responsibility_source']}]({f['responsibility_url']})"
                 )
+
+# PDF of every room compared so far
+all_results = st.session_state.get("moveout", {})
+if all_results:
+    st.divider()
+    st.subheader("Your move-out report")
+    st.caption(f"Before/after photos for every finding. Rooms compared: {', '.join(all_results)}.")
+    st.download_button("Download move-out report (PDF)", data=make_moveout_pdf({  # same outlines as on screen
+                           room: dict(r, findings=[dict(
+                               f, before_path=outlined(f.get("before_path") or "", box_of({"box": f.get("before_box")})),
+                               after_path=outlined(f.get("after_path") or "", box_of({"box": f.get("after_box")})))
+                               for f in r["findings"]]) for room, r in all_results.items()}),
+                       file_name="move-out-report.pdf", mime="application/pdf", type="primary")
 
 st.divider()
 st.caption("General guidance, not legal advice. For help with deposits: "
