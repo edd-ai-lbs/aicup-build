@@ -13,7 +13,7 @@ HERE = Path(__file__).parent
 
 st.set_page_config(page_title="Edd.AI", page_icon=str(HERE / "assets" / "icon.svg"), layout="wide")
 apply_theme()
-st.logo(str(HERE / "assets" / "logo.svg"), icon_image=str(HERE / "assets" / "icon.svg"), size="large")
+st.logo(str(HERE / "assets" / "logo.svg"), size="large")
 
 page = st.navigation(
     [
